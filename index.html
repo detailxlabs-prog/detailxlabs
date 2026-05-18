@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DetailX Labs — Premium Mobile Car Detailing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #161616;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.18);
+    --amber: #2EE800;
+    --amber-light: #52FF1A;
+    --amber-dim: rgba(46,232,0,0.12);
+    --white: #f5f2ed;
+    --muted: #888880;
+    --subtle: #444440;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    cursor: none;
+    overflow-x: hidden;
+  }
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(46,232,0,0.45);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transition: transform 0.35s ease;
+    transform: translate(-50%, -50%);
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 3rem;
+    border-bottom: 1px solid transparent;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  nav.scrolled {
+    background: rgba(10,10,10,0.95);
+    border-color: var(--border);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.08em;
+    color: var(--white); text-decoration: none;
+  }
+  .nav-logo span { color: var(--amber); }
+  .nav-links { display: flex; gap: 2.5rem; align-items: center; }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--amber) !important;
+    color: var(--black) !important;
+    padding: 0.6rem 1.4rem;
+    font-weight: 500 !important;
+    border-radius: 2px;
+  }
+  .nav-cta:hover { background: var(--amber-light) !important; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 3rem 5rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 60%, rgba(10,10,10,1) 100%),
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.018) 60px, rgba(255,255,255,0.018) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.018) 60px, rgba(255,255,255,0.018) 61px);
+    background-color: #0d0c0b;
+  }
+  .hero-accent {
+    position: absolute; top: 15%; right: 8%;
+    width: 480px; height: 480px;
+    border: 1px solid rgba(46,232,0,0.12);
+    border-radius: 50%;
+    animation: pulse-ring 6s ease-in-out infinite;
+  }
+  .hero-accent::before {
+    content: ''; position: absolute; inset: 40px;
+    border: 1px solid rgba(46,232,0,0.08); border-radius: 50%;
+  }
+  .hero-accent::after {
+    content: ''; position: absolute; inset: 80px;
+    border: 1px solid rgba(46,232,0,0.05); border-radius: 50%;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.04); opacity: 0.7; }
+  }
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--amber);
+    margin-bottom: 1.5rem; position: relative;
+    display: flex; align-items: center; gap: 1rem;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-tag::before { content: ''; display: block; width: 40px; height: 1px; background: var(--amber); }
+  .hero-h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 12vw, 140px);
+    line-height: 0.9; letter-spacing: 0.02em;
+    color: var(--white); position: relative;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero-h1 .line2 { color: var(--amber); display: block; }
+  .hero-bottom {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-top: 3rem;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-sub { font-size: 16px; font-weight: 300; color: var(--muted); max-width: 380px; line-height: 1.7; }
+  .hero-actions { display: flex; gap: 1rem; align-items: center; }
+  .btn-primary {
+    background: var(--amber); color: var(--black);
+    border: none; padding: 1rem 2.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 500;
+    border-radius: 2px; cursor: none;
+    text-decoration: none; display: inline-block;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--amber-light); transform: translateY(-1px); }
+  .btn-ghost {
+    border: 1px solid var(--border-strong); color: var(--muted);
+    background: transparent; padding: 1rem 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; letter-spacing: 0.1em;
+    text-transform: uppercase; border-radius: 2px;
+    cursor: none; text-decoration: none; display: inline-block;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--white); color: var(--white); }
+  .hero-scroll {
+    position: absolute; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: 0; animation: fadeUp 0.8s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--subtle);
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--subtle), transparent);
+    animation: scroll-drop 2s ease-in-out infinite;
+  }
+  @keyframes scroll-drop {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* STATS */
+  section { padding: 7rem 3rem; }
+  .section-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--amber);
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .section-tag::before { content: ''; display: block; width: 30px; height: 1px; background: var(--amber); }
+  .section-h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    line-height: 0.95; letter-spacing: 0.02em; margin-bottom: 1rem;
+  }
+
+  /* SERVICES */
+  .services-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); margin-top: 4rem;
+  }
+  .service-card {
+    background: var(--card); padding: 2.5rem;
+    position: relative; overflow: hidden; transition: background 0.3s;
+  }
+  .service-card:hover { background: #1c1c1c; }
+  .service-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--amber);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease;
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-num { font-family: 'Bebas Neue', sans-serif; font-size: 64px; color: rgba(255,255,255,0.04); line-height: 1; position: absolute; top: 1rem; right: 1.5rem; }
+  .service-icon { width: 44px; height: 44px; border: 1px solid var(--border-strong); border-radius: 2px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--amber); font-size: 20px; }
+  .service-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.04em; margin-bottom: 0.75rem; }
+  .service-desc { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+  .service-price { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--amber); line-height: 1; }
+  .service-price-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtle); display: block; margin-top: 4px; }
+  .service-savings { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); margin-top: 6px; display: block; }
+  .service-includes { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); list-style: none; }
+  .service-includes li { font-size: 13px; color: var(--muted); padding: 6px 0; display: flex; align-items: center; gap: 10px; }
+  .service-includes li::before { content: '→'; color: var(--amber); font-size: 12px; flex-shrink: 0; }
+  .service-badge { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--amber-dim); border: 1px solid rgba(46,232,0,0.3); color: var(--amber-light); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; }
+  .addons-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+  .addon-card { background: var(--card); border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+  .addon-name { font-size: 14px; font-weight: 400; }
+  .addon-sub { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: var(--muted); margin-top: 2px; }
+  .addon-price { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--amber); }
+  .addon-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--subtle); margin-top: 0.75rem; }
+
+  /* PROCESS */
+  .process-section { background: var(--dark); }
+  .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 4rem; border: 1px solid var(--border); }
+  .process-step { padding: 3rem 2.5rem; border-right: 1px solid var(--border); position: relative; }
+  .process-step:last-child { border-right: none; }
+  .process-step-num { font-family: 'Bebas Neue', sans-serif; font-size: 80px; color: rgba(46,232,0,0.08); line-height: 1; position: absolute; top: 1rem; right: 1.5rem; }
+  .process-step-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--amber); margin-bottom: 1rem; }
+  .process-step-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.04em; margin-bottom: 0.75rem; }
+  .process-step-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* WHY US */
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; margin-top: 4rem; }
+  .why-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .why-item { padding: 1.75rem 0; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 2rem 1fr; gap: 1.5rem; align-items: start; }
+  .why-item:first-child { border-top: 1px solid var(--border); }
+  .why-arrow { color: var(--amber); font-size: 14px; margin-top: 3px; }
+  .why-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .why-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .why-visual { background: var(--card); border: 1px solid var(--border); border-radius: 2px; padding: 3rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .why-visual-stat { display: flex; flex-direction: column; gap: 4px; }
+  .why-visual-stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--white); line-height: 1; }
+  .why-visual-stat-num span { color: var(--amber); }
+  .why-visual-stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .why-divider { height: 1px; background: var(--border); }
+
+  /* ============================================
+     WHY WE COST MORE — new section
+     ============================================ */
+  .cost-section {
+    background: var(--black);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 7rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .cost-section::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(46,232,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cost-statement {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 100px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: var(--white);
+    max-width: 900px;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .cost-statement .highlight {
+    color: var(--amber);
+    display: inline;
+  }
+  .cost-statement .strike {
+    position: relative;
+    color: var(--subtle);
+    display: inline-block;
+  }
+  .cost-statement .strike::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    height: 3px;
+    background: var(--amber);
+    transform: translateY(-50%);
+  }
+
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+  .cost-card {
+    background: var(--card);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .cost-card:hover { background: #1a1a1a; }
+  .cost-card-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: rgba(46,232,0,0.06);
+    line-height: 1;
+    position: absolute; top: 0.5rem; right: 1rem;
+  }
+  .cost-card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--amber);
+    margin-bottom: 1rem;
+  }
+  .cost-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; letter-spacing: 0.03em;
+    margin-bottom: 1rem; line-height: 1;
+  }
+  .cost-card-body {
+    font-size: 13px; color: var(--muted); line-height: 1.75;
+  }
+  .cost-card-body strong { color: var(--white); font-weight: 400; }
+  .cost-compare {
+    display: flex; flex-direction: column; gap: 0;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .cost-compare-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .cost-compare-row:last-child { border-bottom: none; }
+  .cost-compare-them { color: var(--subtle); display: flex; align-items: center; gap: 6px; }
+  .cost-compare-them::before { content: '✕'; color: #553333; font-size: 10px; }
+  .cost-compare-us { color: var(--white); display: flex; align-items: center; gap: 6px; }
+  .cost-compare-us::before { content: '→'; color: var(--amber); font-size: 10px; }
+
+  .cost-bottom {
+    margin-top: 4rem;
+    padding: 2.5rem 3rem;
+    border: 1px solid rgba(46,232,0,0.22);
+    background: rgba(46,232,0,0.05);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 2rem; flex-wrap: wrap;
+  }
+  .cost-bottom-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.04em;
+    color: var(--white); line-height: 1.1;
+  }
+  .cost-bottom-text span { color: var(--amber); }
+  .cost-bottom-sub {
+    font-size: 13px; color: var(--muted);
+    margin-top: 6px; max-width: 440px; line-height: 1.6;
+  }
+
+  /* TESTIMONIAL */
+  .testimonial-section { background: var(--amber); padding: 6rem 3rem; }
+  .testimonial-inner { max-width: 860px; margin: 0 auto; text-align: center; }
+  .testimonial-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 5vw, 56px); letter-spacing: 0.02em; color: var(--black); line-height: 1.1; margin-bottom: 2rem; }
+  .testimonial-attr { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(10,10,10,0.6); }
+
+  /* BOOKING */
+  .booking-section { background: var(--dark); }
+  .booking-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; margin-top: 4rem; }
+  .booking-form { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .form-input, .form-select, .form-textarea { background: var(--card); border: 1px solid var(--border); border-radius: 2px; padding: 0.85rem 1rem; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 300; outline: none; transition: border-color 0.2s; cursor: none; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--amber); }
+  .form-select option { background: var(--card); }
+  .form-textarea { resize: none; height: 100px; }
+  .form-submit { background: var(--amber); color: var(--black); border: none; padding: 1.1rem; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; border-radius: 2px; cursor: none; transition: background 0.2s; margin-top: 0.5rem; }
+  .form-submit:hover { background: var(--amber-light); }
+  .booking-info { display: flex; flex-direction: column; gap: 2rem; }
+  .booking-info-item { padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .booking-info-item:last-child { border-bottom: none; }
+  .booking-info-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--amber); margin-bottom: 0.5rem; }
+  .booking-info-value { font-size: 15px; font-weight: 300; }
+  .booking-info-sub { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+
+  /* FOOTER */
+  footer { background: var(--black); border-top: 1px solid var(--border); padding: 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--white); }
+  .footer-logo span { color: var(--amber); }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--subtle); }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtle); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--amber); }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    nav { padding: 1.25rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero { padding: 0 1.5rem 4rem; }
+    .hero-bottom { flex-direction: column; align-items: flex-start; gap: 2rem; }
+    .stat { padding: 1.5rem; }
+    section, .cost-section { padding: 4rem 1.5rem; }
+    .services-grid, .cost-grid, .process-grid { grid-template-columns: 1fr; }
+    .process-step { border-right: none; border-bottom: 1px solid var(--border); }
+    .why-grid, .booking-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .addons-row { grid-template-columns: 1fr; }
+    .cost-bottom { flex-direction: column; }
+    footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Detail<span>X</span> Labs</a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#process">Process</a>
+    <a href="#why">Why Us</a>
+    <a href="#cost">Our Standard</a>
+    <a href="#booking" class="nav-cta">Book Now</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-accent"></div>
+  <div class="hero-tag">Mobile Detailing · Premium Grade</div>
+  <h1 class="hero-h1">Detail<span class="line2">X Labs.</span></h1>
+  <div class="hero-bottom">
+    <p class="hero-sub">Professional-grade mobile detailing delivered to your driveway, office, or wherever the day takes you. Zero downtime. Showroom results.</p>
+    <div class="hero-actions">
+      <a href="#booking" class="btn-primary">Book a Detail</a>
+      <a href="#services" class="btn-ghost">View Packages</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- WHY WE COST MORE -->
+<div class="cost-section" id="cost">
+  <div class="section-tag">On our pricing</div>
+
+  <div class="cost-statement reveal">
+    We're not the <span class="strike">cheapest</span> option.<br>
+    We're the <span class="highlight">last one you'll try.</span>
+  </div>
+
+  <div class="cost-grid reveal">
+    <div class="cost-card">
+      <span class="cost-card-num">01</span>
+      <div class="cost-card-tag">Products</div>
+      <div class="cost-card-title">We Name What We Use</div>
+      <p class="cost-card-body">
+        Most detailers use generic bulk chemicals bought by the drum. DetailX Labs uses <strong>Gyeon, Koch Chemie, and Carpro</strong> — the same brands trusted on six-figure vehicles. You're not paying more. You're paying for what actually works.
+      </p>
+      <div class="cost-compare">
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Unbranded bulk solution</span>
+          <span class="cost-compare-us">Named professional brands</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Same product on every car</span>
+          <span class="cost-compare-us">Surface-matched treatment</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Fades within weeks</span>
+          <span class="cost-compare-us">Results that hold</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cost-card">
+      <span class="cost-card-num">02</span>
+      <div class="cost-card-tag">Convenience</div>
+      <div class="cost-card-title">Your Time Has a Price Tag</div>
+      <p class="cost-card-body">
+        A cheaper service means drop-offs, waiting rooms, and rearranged days. DetailX Labs comes to <strong>you</strong> — your driveway, your office, your schedule. The convenience isn't a perk. It's the entire point.
+      </p>
+      <div class="cost-compare">
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Drop-off required</span>
+          <span class="cost-compare-us">We come to you</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Half-day lost waiting</span>
+          <span class="cost-compare-us">Zero downtime</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Fixed shop hours</span>
+          <span class="cost-compare-us">Morning, lunch, or after hours</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cost-card">
+      <span class="cost-card-num">03</span>
+      <div class="cost-card-tag">Consistency</div>
+      <div class="cost-card-title">A System, Not a Side Hustle</div>
+      <p class="cost-card-body">
+        Cheap detailers vary wildly visit to visit. DetailX Labs is a <strong>repeatable professional system</strong> — same process, same products, same standard every time. That's what the membership is built on: certainty, not luck.
+      </p>
+      <div class="cost-compare">
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Different tech each time</span>
+          <span class="cost-compare-us">Same trained professional</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">No documentation</span>
+          <span class="cost-compare-us">Before & after photos</span>
+        </div>
+        <div class="cost-compare-row">
+          <span class="cost-compare-them">Unpredictable results</span>
+          <span class="cost-compare-us">Guaranteed standard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost-bottom reveal">
+    <div>
+      <div class="cost-bottom-text">Our clients don't ask<br>why we cost more.<br><span>They ask why they waited.</span></div>
+      <p class="cost-bottom-sub">Once you've experienced DetailX Labs, the price comparison stops making sense. Because you're not comparing prices anymore — you're comparing results.</p>
+    </div>
+    <a href="#booking" class="btn-primary">Book Your First Detail</a>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-tag">Our packages</div>
+  <h2 class="section-h2">Precision<br>Detailing,<br>Your Way.</h2>
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <span class="service-num">01</span>
+      <div class="service-icon">◈</div>
+      <div class="service-name">Premium Interior Detail</div>
+      <p class="service-desc">A deep, systematic interior restoration — every surface treated with professional-grade product and care.</p>
+      <div class="service-price">$199</div>
+      <span class="service-price-note">per visit</span>
+      <ul class="service-includes">
+        <li>Full vacuum & fabric shampoo</li>
+        <li>Leather conditioning</li>
+        <li>Dashboard & trim clean</li>
+        <li>Door jambs & cup holders</li>
+        <li>Interior window clean</li>
+      </ul>
+    </div>
+    <div class="service-card">
+      <span class="service-num">02</span>
+      <div class="service-icon">◉</div>
+      <div class="service-name">Premium Full Detail</div>
+      <p class="service-desc">Inside and out — the complete treatment for a genuine showroom-ready finish from top to tyre.</p>
+      <div class="service-price">$349</div>
+      <span class="service-price-note">per visit</span>
+      <ul class="service-includes">
+        <li>Everything in interior detail</li>
+        <li>Exterior hand wash & dry</li>
+        <li>Paint clay bar treatment</li>
+        <li>Tire & trim dressing</li>
+        <li>Exterior window polish</li>
+      </ul>
+    </div>
+    <div class="service-card">
+      <div class="service-badge">Best Value</div>
+      <span class="service-num">03</span>
+      <div class="service-icon">◆</div>
+      <div class="service-name">Monthly Membership</div>
+      <p class="service-desc">One full detail every month, locked in at the member rate. Priority scheduling, no surprises.</p>
+      <div class="service-price">$249</div>
+      <span class="service-price-note">per month</span>
+      <span class="service-savings">Save $100 vs. pay-per-visit</span>
+      <ul class="service-includes">
+        <li>1 full detail every month</li>
+        <li>Priority booking access</li>
+        <li>Locked-in member rate</li>
+        <li>Cancel anytime</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top: 2rem;" class="reveal">
+    <p class="section-tag" style="margin-bottom: 1rem;">Add-ons</p>
+    <div class="addons-row">
+      <div class="addon-card">
+        <div><div class="addon-name">Pet Hair Removal</div><div class="addon-sub">Pricing may vary by severity</div></div>
+        <div class="addon-price">$30+</div>
+      </div>
+      <div class="addon-card">
+        <div><div class="addon-name">Vomit & Blood Clean</div><div class="addon-sub">Full biohazard interior treatment</div></div>
+        <div class="addon-price">$50+</div>
+      </div>
+    </div>
+    <p class="addon-note">Standard vehicle pricing applies. SUV/truck surcharge may apply.</p>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process-section" id="process">
+  <div class="section-tag">How it works</div>
+  <h2 class="section-h2">Three Steps.<br>Zero Hassle.</h2>
+  <div class="process-grid reveal">
+    <div class="process-step">
+      <span class="process-step-num">01</span>
+      <div class="process-step-label">Step one</div>
+      <div class="process-step-title">Book in 60 Seconds</div>
+      <p class="process-step-desc">Choose your package, select a date, and tell us where your car will be. No phone calls, no back-and-forth — it takes less than a minute.</p>
+    </div>
+    <div class="process-step">
+      <span class="process-step-num">02</span>
+      <div class="process-step-label">Step two</div>
+      <div class="process-step-title">We Come to You</div>
+      <p class="process-step-desc">Our fully-equipped van arrives at your home, office, or anywhere your car is parked. You carry on with your day while we get to work.</p>
+    </div>
+    <div class="process-step">
+      <span class="process-step-num">03</span>
+      <div class="process-step-label">Step three</div>
+      <div class="process-step-title">Showroom Finish</div>
+      <p class="process-step-desc">Before-and-after photos sent straight to your phone. We don't pack up until every detail is right — that's the DetailX Labs standard.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div class="section-tag">Why DetailX Labs</div>
+  <h2 class="section-h2">The Standard<br>Others Don't<br>Bother With.</h2>
+  <div class="why-grid">
+    <ul class="why-list reveal">
+      <li class="why-item">
+        <span class="why-arrow">→</span>
+        <div>
+          <div class="why-title">Premium-grade products only</div>
+          <div class="why-desc">The same professional brands used on six-figure cars — Gyeon, Koch Chemie, Carpro. Never substituted, never cut-rate.</div>
+        </div>
+      </li>
+      <li class="why-item">
+        <span class="why-arrow">→</span>
+        <div>
+          <div class="why-title">Zero downtime for you</div>
+          <div class="why-desc">We work around your schedule — morning, lunch, or after hours. Your car gets detailed while you get on with your day.</div>
+        </div>
+      </li>
+      <li class="why-item">
+        <span class="why-arrow">→</span>
+        <div>
+          <div class="why-title">Documented results every time</div>
+          <div class="why-desc">Before-and-after photos sent directly to your phone. Complete transparency, every single visit.</div>
+        </div>
+      </li>
+      <li class="why-item">
+        <span class="why-arrow">→</span>
+        <div>
+          <div class="why-title">Members get priority access</div>
+          <div class="why-desc">Monthly members are scheduled first — because reliable clients deserve a reliable service.</div>
+        </div>
+      </li>
+    </ul>
+    <div class="why-visual reveal">
+      <div class="why-visual-stat">
+        <div class="why-visual-stat-num">4<span>.9★</span></div>
+        <div class="why-visual-stat-label">Average client rating</div>
+      </div>
+      <div class="why-divider"></div>
+      <div class="why-visual-stat">
+        <div class="why-visual-stat-num">200<span>+</span></div>
+        <div class="why-visual-stat-label">Professionals served</div>
+      </div>
+      <div class="why-divider"></div>
+      <div class="why-visual-stat">
+        <div class="why-visual-stat-num">$<span>100</span></div>
+        <div class="why-visual-stat-label">Saved monthly with membership</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<div class="testimonial-section">
+  <div class="testimonial-inner">
+    <p class="testimonial-quote">"I've tried three other mobile services. This is the only one I've re-booked."</p>
+    <p class="testimonial-attr">James T. · VP of Sales · Monthly Member</p>
+  </div>
+</div>
+
+<!-- BOOKING -->
+<section class="booking-section" id="booking">
+  <div class="section-tag">Ready to book</div>
+  <h2 class="section-h2">Reserve Your<br>Detail.</h2>
+  <div class="booking-inner">
+    <form class="booking-form reveal" onsubmit="return false;">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First name</label>
+          <input class="form-input" type="text" placeholder="James">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name</label>
+          <input class="form-input" type="text" placeholder="Thompson">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="james@company.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" type="tel" placeholder="+1 (555) 000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Package</label>
+        <select class="form-select">
+          <option value="">Select a package</option>
+          <option>Premium Interior Detail — $199</option>
+          <option>Premium Full Detail — $349</option>
+          <option>Monthly Membership — $249/mo</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Preferred date</label>
+          <input class="form-input" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preferred time</label>
+          <select class="form-select">
+            <option>Morning (8am–11am)</option>
+            <option>Midday (11am–2pm)</option>
+            <option>Afternoon (2pm–5pm)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location / Notes</label>
+        <textarea class="form-textarea" placeholder="Where should we meet your car? Any special requests?"></textarea>
+      </div>
+      <button class="form-submit" type="submit">Request Booking →</button>
+    </form>
+    <div class="booking-info reveal">
+      <div class="booking-info-item">
+        <div class="booking-info-label">Response time</div>
+        <div class="booking-info-value">Within 2 hours</div>
+        <div class="booking-info-sub">We confirm every booking personally — no auto-responses, no guesswork.</div>
+      </div>
+      <div class="booking-info-item">
+        <div class="booking-info-label">Coverage area</div>
+        <div class="booking-info-value">Greater city area</div>
+        <div class="booking-info-sub">We travel to your home, office, or any parking location. Contact us if you're unsure.</div>
+      </div>
+      <div class="booking-info-item">
+        <div class="booking-info-label">Availability</div>
+        <div class="booking-info-value">Mon – Sat, 8am – 6pm</div>
+        <div class="booking-info-sub">Members get priority scheduling. Most slots fill within 48 hours.</div>
+      </div>
+      <div class="booking-info-item">
+        <div class="booking-info-label">Vehicle types</div>
+        <div class="booking-info-value">Sedans, SUVs & Trucks</div>
+        <div class="booking-info-sub">Standard pricing applies to sedans. SUV and truck surcharge may apply.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Detail<span>X</span> Labs</div>
+  <p class="footer-copy">© 2026 DetailX Labs. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#process">Process</a>
+    <a href="#cost">Our Standard</a>
+    <a href="#booking">Book</a>
+  </div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
