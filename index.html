@@ -241,6 +241,22 @@
   .addon-price { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--amber); }
   .addon-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--subtle); margin-top: 0.75rem; }
 
+  /* GET QUOTE BUTTON — packages section */
+  .service-btn {
+    display: block; width: 100%;
+    background: transparent; color: var(--amber);
+    border: 1px solid rgba(46,232,0,0.4);
+    padding: 0.85rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500;
+    text-align: center; text-decoration: none;
+    border-radius: 2px; cursor: none;
+    margin-top: 1.25rem;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .service-btn:hover { background: var(--amber); color: var(--black); border-color: var(--amber); }
+
   /* PROCESS */
   .process-section { background: var(--dark); }
   .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 4rem; border: 1px solid var(--border); }
@@ -583,8 +599,7 @@
       <div class="service-icon">◈</div>
       <div class="service-name">Premium Interior Detail</div>
       <p class="service-desc">A deep, systematic interior restoration — every surface treated with professional-grade product and care.</p>
-      <div class="service-price"> <a href="#booking" class="nav-cta">Get Quote</a></div>
-      <span class="service-price-note">per visit</span>
+      <a href="#booking" class="service-btn">Get Quote →</a>
       <ul class="service-includes">
         <li>Full vacuum & fabric shampoo</li>
         <li>Leather conditioning</li>
@@ -598,8 +613,7 @@
       <div class="service-icon">◉</div>
       <div class="service-name">Premium Full Detail</div>
       <p class="service-desc">Inside and out — the complete treatment for a genuine showroom-ready finish from top to tyre.</p>
-      <div class="service-price"> <a href="#booking" class="nav-cta">Get Quote</a></div>
-      <span class="service-price-note">per visit</span>
+      <a href="#booking" class="service-btn">Get Quote →</a>
       <ul class="service-includes">
         <li>Everything in interior detail</li>
         <li>Exterior hand wash & dry</li>
@@ -614,7 +628,7 @@
       <div class="service-icon">◆</div>
       <div class="service-name">Monthly Membership</div>
       <p class="service-desc">One full detail every month, locked in at the member rate. Priority scheduling, no surprises.</p>
-      <div class="service-price"> <a href="#booking" class="nav-cta">Get Quote</a></div>
+      <a href="#booking" class="service-btn">Get Quote →</a>
       <span class="service-price-note">per month</span>
       <span class="service-savings">Save $100 vs. pay-per-visit</span>
       <ul class="service-includes">
@@ -709,7 +723,7 @@
       </div>
       <div class="why-divider"></div>
       <div class="why-visual-stat">
-        <div class="why-visual-stat-num">200<span>+</span></div>
+        <div class="why-visual-stat-num">11<span>+</span></div>
         <div class="why-visual-stat-label">Professionals served</div>
       </div>
       <div class="why-divider"></div>
@@ -790,12 +804,14 @@
       </div>
       <div class="booking-info-item">
         <div class="booking-info-label">Coverage area</div>
-        <div class="booking-info-value">Greater city area</div>
+        <div class="booking-info-value">Around London ON</div>
         <div class="booking-info-sub">We travel to your home, office, or any parking location. Contact us if you're unsure.</div>
       </div>
       <div class="booking-info-item">
         <div class="booking-info-label">Availability</div>
-        <div class="booking-info-value">Mon – Sat, 8am – 6pm</div>
+        <div class="booking-info-value">Mon – Fri, 6pm – 9pm</div>
+        <div class="booking-info-value">sat, 7am – 9pm</div>
+        <div class="booking-info-value">Sun, 1 pm – 9pm</div>
         <div class="booking-info-sub">Members get priority scheduling. Most slots fill within 48 hours.</div>
       </div>
       <div class="booking-info-item">
@@ -862,7 +878,7 @@
   // ⚠ IMPORTANT: Replace the number below with your real WhatsApp business number
   // Format: country code + number, no spaces, no dashes, no +
   // Canada example: 15195550000 (1 = Canada country code, then your 10-digit number)
-  const WHATSAPP_NUMBER = '15488813462'; // 👈 REPLACE THIS WITH YOUR NUMBER
+  const WHATSAPP_NUMBER = '15483915549'; // 👈 REPLACE THIS WITH YOUR NUMBER
 
   function sendToWhatsApp(e) {
     e.preventDefault();
