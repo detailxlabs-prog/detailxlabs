@@ -734,28 +734,28 @@
   <div class="section-tag">Ready to book</div>
   <h2 class="section-h2">Reserve Your<br>Detail.</h2>
   <div class="booking-inner">
-    <form class="booking-form reveal" onsubmit="return false;">
+    <form class="booking-form reveal" onsubmit="sendToWhatsApp(event);">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">First name</label>
-          <input class="form-input" type="text" placeholder="James">
+          <input class="form-input" id="bk-firstname" type="text" placeholder="James" required>
         </div>
         <div class="form-group">
           <label class="form-label">Last name</label>
-          <input class="form-input" type="text" placeholder="Thompson">
+          <input class="form-input" id="bk-lastname" type="text" placeholder="Thompson" required>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" placeholder="james@company.com">
+        <input class="form-input" id="bk-email" type="email" placeholder="james@company.com" required>
       </div>
       <div class="form-group">
         <label class="form-label">Phone</label>
-        <input class="form-input" type="tel" placeholder="+1 (555) 000-0000">
+        <input class="form-input" id="bk-phone" type="tel" placeholder="+1 (555) 000-0000" required>
       </div>
       <div class="form-group">
         <label class="form-label">Package</label>
-        <select class="form-select">
+        <select class="form-select" id="bk-package" required>
           <option value="">Select a package</option>
           <option>Premium Interior Detail — $199</option>
           <option>Premium Full Detail — $349</option>
@@ -765,11 +765,11 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Preferred date</label>
-          <input class="form-input" type="date">
+          <input class="form-input" id="bk-date" type="date" required>
         </div>
         <div class="form-group">
           <label class="form-label">Preferred time</label>
-          <select class="form-select">
+          <select class="form-select" id="bk-time">
             <option>Morning (8am–11am)</option>
             <option>Midday (11am–2pm)</option>
             <option>Afternoon (2pm–5pm)</option>
@@ -778,9 +778,9 @@
       </div>
       <div class="form-group">
         <label class="form-label">Location / Notes</label>
-        <textarea class="form-textarea" placeholder="Where should we meet your car? Any special requests?"></textarea>
+        <textarea class="form-textarea" id="bk-notes" placeholder="Where should we meet your car? Any special requests?"></textarea>
       </div>
-      <button class="form-submit" type="submit">Request Booking →</button>
+      <button class="form-submit" type="submit">Request Booking via WhatsApp →</button>
     </form>
     <div class="booking-info reveal">
       <div class="booking-info-item">
@@ -820,6 +820,7 @@
 </footer>
 
 <script>
+  // ── CURSOR ──
   const cursor = document.getElementById('cursor');
   const ring = document.getElementById('cursorRing');
   let mx = 0, my = 0, rx = 0, ry = 0;
@@ -834,15 +835,21 @@
     requestAnimationFrame(animRing);
   }
   animRing();
+
+  // ── NAVBAR ──
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 60);
   });
+
+  // ── REVEAL ON SCROLL ──
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
+
+  // ── SMOOTH SCROLL ──
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
@@ -850,6 +857,67 @@
       if (t) t.scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  // ── WHATSAPP BOOKING ──
+  // ⚠ IMPORTANT: Replace the number below with your real WhatsApp business number
+  // Format: country code + number, no spaces, no dashes, no +
+  // Canada example: 15195550000 (1 = Canada country code, then your 10-digit number)
+  const WHATSAPP_NUMBER = '15488813462'; // 👈 REPLACE THIS WITH YOUR NUMBER
+
+  function sendToWhatsApp(e) {
+    e.preventDefault();
+
+    // Collect all form fields
+    const firstName = document.getElementById('bk-firstname').value.trim();
+    const lastName  = document.getElementById('bk-lastname').value.trim();
+    const email     = document.getElementById('bk-email').value.trim();
+    const phone     = document.getElementById('bk-phone').value.trim();
+    const pkg       = document.getElementById('bk-package').value.trim();
+    const date      = document.getElementById('bk-date').value;
+    const time      = document.getElementById('bk-time').value;
+    const notes     = document.getElementById('bk-notes').value.trim();
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !pkg || !date) {
+      alert('Please fill in all required fields before submitting.');
+      return;
+    }
+
+    // Format date nicely
+    const dateFormatted = date
+      ? new Date(date + 'T12:00:00').toLocaleDateString('en-CA', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        })
+      : 'Not specified';
+
+    // Build the WhatsApp message
+    const message =
+`🚗 *NEW BOOKING REQUEST — DetailX Labs*
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+👤 *CLIENT DETAILS*
+• Name: ${firstName} ${lastName}
+• Email: ${email}
+• Phone: ${phone}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+🧽 *SERVICE REQUESTED*
+• Package: ${pkg}
+• Date: ${dateFormatted}
+• Time: ${time}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+📍 *LOCATION / NOTES*
+${notes || 'No additional notes provided.'}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+_Sent from DetailX Labs website_`;
+
+    // Encode and open WhatsApp
+    const encoded = encodeURIComponent(message);
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
+    window.open(url, '_blank');
+  }
 </script>
 </body>
 </html>
