@@ -93,12 +93,39 @@
   }
   .hero-bg {
     position: absolute; inset: 0;
-    background:
-      linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 60%, rgba(10,10,10,1) 100%),
-      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.018) 60px, rgba(255,255,255,0.018) 61px),
-      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.018) 60px, rgba(255,255,255,0.018) 61px);
-    background-color: #0d0c0b;
+    background: #0d0c0b;
+    overflow: hidden;
   }
+  /* video fills hero-bg */
+  .hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .hero-video.loaded { opacity: 1; }
+  /* dark overlay on top of video */
+  .hero-video-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(10,10,10,0.45) 0%,
+      rgba(10,10,10,0.55) 50%,
+      rgba(10,10,10,0.92) 85%,
+      rgba(10,10,10,1)    100%
+    );
+    z-index: 1;
+  }
+  /* subtle grid texture on overlay */
+  .hero-video-overlay::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.014) 60px, rgba(255,255,255,0.014) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.014) 60px, rgba(255,255,255,0.014) 61px);
+  }
+
   .hero-accent {
     position: absolute; top: 15%; right: 8%;
     width: 480px; height: 480px;
@@ -117,6 +144,15 @@
   @keyframes pulse-ring {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.04); opacity: 0.7; }
+  }
+  /* ensure all hero text sits above video overlay */
+  .hero-tag,
+  .hero-h1,
+  .hero-bottom,
+  .hero-accent,
+  .hero-scroll {
+    position: relative;
+    z-index: 2;
   }
   .hero-tag {
     font-family: 'DM Mono', monospace;
@@ -208,13 +244,19 @@
 
   /* SERVICES */
   .services-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 1px; background: var(--border);
-    border: 1px solid var(--border); margin-top: 4rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 4rem;
+    width: 100%;
+    max-width: 100%;
   }
   .service-card {
     background: var(--card); padding: 2.5rem;
     position: relative; overflow: hidden; transition: background 0.3s;
+    display: flex; flex-direction: column;
   }
   .service-card:hover { background: #1c1c1c; }
   .service-card::before {
@@ -230,7 +272,7 @@
   .service-price { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--amber); line-height: 1; }
   .service-price-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtle); display: block; margin-top: 4px; }
   .service-savings { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); margin-top: 6px; display: block; }
-  .service-includes { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); list-style: none; }
+  .service-includes { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); list-style: none; }
   .service-includes li { font-size: 13px; color: var(--muted); padding: 6px 0; display: flex; align-items: center; gap: 10px; }
   .service-includes li::before { content: '→'; color: var(--amber); font-size: 12px; flex-shrink: 0; }
   .service-badge { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--amber-dim); border: 1px solid rgba(46,232,0,0.3); color: var(--amber-light); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; }
@@ -242,6 +284,43 @@
   .addon-note { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--subtle); margin-top: 0.75rem; }
 
   /* GET QUOTE BUTTON — packages section */
+  .service-price-display {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0.4rem 0 0.1rem;
+  }
+  .service-price-display .spd-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--amber);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(46,232,0,0.25);
+  }
+  .service-price-display .spd-sup {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--amber);
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+  .service-price-display .spd-tax {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    align-self: flex-end;
+    margin-bottom: 6px;
+  }
+  .service-price-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
   .service-btn {
     display: block; width: 100%;
     background: transparent; color: var(--amber);
@@ -419,6 +498,58 @@
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  /* ── Addon checkboxes ── */
+  .addon-check-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 0.6rem 0.9rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: border-color .2s, background .2s;
+    user-select: none;
+  }
+  .addon-check-label:hover {
+    border-color: rgba(46,232,0,0.35);
+    background: #141414;
+  }
+  .addon-check-label input[type="checkbox"] { display: none; }
+  .addon-check-box {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 2px;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    position: relative;
+  }
+  .addon-check-label input:checked ~ .addon-check-box {
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+  .addon-check-label input:checked ~ .addon-check-box::after {
+    content: '';
+    position: absolute;
+    width: 4px; height: 7px;
+    border: 2px solid var(--black);
+    border-top: none; border-left: none;
+    transform: rotate(45deg) translate(-1px,-1px);
+  }
+  .addon-check-label input:checked ~ .addon-check-text {
+    color: var(--white);
+  }
+  .addon-check-text {
+    font-size: 13px;
+    color: var(--muted);
+    transition: color .2s;
+  }
+  .addon-check-label:has(input:checked) {
+    border-color: rgba(46,232,0,0.4);
+    background: rgba(46,232,0,0.05);
+  }
+
   .form-input, .form-select, .form-textarea { background: var(--card); border: 1px solid var(--border); border-radius: 2px; padding: 0.85rem 1rem; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 300; outline: none; transition: border-color 0.2s; cursor: none; }
   .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--amber); }
   .form-select option { background: var(--card); }
@@ -474,6 +605,7 @@
   <a href="#" class="nav-logo">Detail<span>X</span> Labs</a>
   <div class="nav-links">
     <a href="#services">Services</a>
+    <a href="#gallery">Gallery</a>
     <a href="#process">Process</a>
     <a href="#why">Why Us</a>
     <a href="#cost">Our Standard</a>
@@ -483,8 +615,50 @@
 
 <!-- HERO -->
 <section class="hero" id="home">
-  <div class="hero-bg"></div>
+  <div class="hero-bg">
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  HOW TO ADD YOUR VIDEO:                              ║
+      ║  1. Upload your .mp4 file to your website folder     ║
+      ║  2. Replace  src="YOUR_VIDEO.mp4"  below             ║
+      ║  3. Remove the placeholder overlay div               ║
+      ║  Recommended: landscape, 1920x1080, under 15MB       ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+    <video
+      id="heroVideo"
+      class="hero-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+    >
+      <source src="./media/video.mp4" type="video/mp4">
+    </video>
+    <!-- dark fallback shown if video blocked by browser -->
+    <div id="heroPosterFallback" style="
+      position:absolute;inset:0;
+      background:linear-gradient(135deg,#090e09 0%,#0a0a0a 40%,#0c140c 70%,#080808 100%);
+      opacity:0;
+      transition:opacity 1s ease;
+    "></div>
+    <!-- placeholder shown until real video is added -->
+    <div id="heroVideoPlaceholder" style="
+      position:absolute;inset:0;
+      background:
+        linear-gradient(135deg, #090e09 0%, #0a0a0a 40%, #0c140c 70%, #080808 100%);
+      display:flex;align-items:center;justify-content:center;
+    ">
+      <div style="text-align:center;opacity:0.12;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:80px;color:#2EE800;letter-spacing:0.1em;">DX</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#fff;text-transform:uppercase;margin-top:8px;">Add your detailing video here</div>
+      </div>
+    </div>
+    <div class="hero-video-overlay"></div>
+  </div>
   <div class="hero-accent"></div>
+
   <div class="hero-tag">Mobile Detailing · Premium Grade</div>
   <h1 class="hero-h1">Detail<span class="line2">X Labs.</span></h1>
   <div class="hero-bottom">
@@ -589,6 +763,344 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════ GALLERY INFINITE SCROLL ═══════════════════ -->
+<section id="gallery" style="padding:7rem 0 5rem;background:var(--dark);overflow:hidden;">
+<style>
+.gallery-header{padding:0 3rem;margin-bottom:3rem;}
+
+/* ── Lightbox ── */
+#g-lightbox{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.93);z-index:9999;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+}
+#g-lightbox.open{display:flex;}
+#g-lightbox img{
+  max-width:90vw;max-height:80vh;
+  border-radius:4px;border:1px solid rgba(46,232,0,0.3);
+  object-fit:contain;
+  animation:lbIn .25s ease;
+}
+@keyframes lbIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+#g-lightbox-caption{
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--amber);
+}
+.lb-close{
+  position:fixed;top:24px;right:28px;
+  background:transparent;border:1px solid rgba(255,255,255,.2);
+  color:var(--white);font-size:22px;width:42px;height:42px;
+  border-radius:2px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;z-index:10000;
+}
+.lb-close:hover{background:var(--amber);color:var(--black);border-color:var(--amber);}
+.lb-nav{
+  position:fixed;top:50%;transform:translateY(-50%);
+  background:transparent;border:1px solid rgba(255,255,255,.2);
+  color:var(--white);font-size:22px;width:48px;height:48px;
+  border-radius:2px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;z-index:10000;
+}
+.lb-nav:hover{background:var(--amber);color:var(--black);border-color:var(--amber);}
+#lb-prev{left:20px;} #lb-next{right:20px;}
+
+/* ── Infinite strip ── */
+.inf-outer{
+  position:relative;width:100%;overflow:hidden;
+}
+.inf-outer::before,.inf-outer::after{
+  content:'';position:absolute;top:0;bottom:0;width:140px;
+  z-index:3;pointer-events:none;
+}
+.inf-outer::before{left:0;background:linear-gradient(90deg,var(--dark),transparent);}
+.inf-outer::after{right:0;background:linear-gradient(-90deg,var(--dark),transparent);}
+
+.inf-track{
+  display:flex;gap:18px;
+  width:max-content;
+  cursor:grab;
+  will-change:transform;
+}
+.inf-track.dragging{cursor:grabbing;}
+.inf-track.dragging img{pointer-events:none;}
+
+/* ── Slide card ── */
+.g-slide{
+  flex:0 0 360px;height:260px;
+  border-radius:4px;overflow:hidden;
+  position:relative;
+  border:1px solid var(--border);
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+  background:var(--card);
+  cursor:pointer;
+}
+.g-slide:hover{
+  border-color:rgba(46,232,0,0.5);
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:0 16px 48px rgba(0,0,0,.5),0 0 0 1px rgba(46,232,0,.15);
+}
+.g-slide img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s ease;pointer-events:none;
+}
+.g-slide:hover img{transform:scale(1.04);}
+.g-ph{
+  width:100%;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(135deg,#0d1a0d,#0f0f0f);
+}
+.g-ph-icon{font-size:34px;opacity:.45;}
+.g-ph-txt{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--subtle);
+}
+
+
+@media(max-width:768px){
+  .g-slide{flex:0 0 240px;height:180px;}
+  .gallery-header{padding:0 1.5rem;}
+}
+</style>
+
+<!-- Lightbox -->
+<div id="g-lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav" id="lb-prev">&#8592;</button>
+  <img id="lb-img" src="" alt="">
+  <div id="g-lightbox-caption"></div>
+  <button class="lb-nav" id="lb-next">&#8594;</button>
+</div>
+
+<div class="gallery-header reveal">
+  <div class="section-tag">Our Work</div>
+  <h2 class="section-h2">Results<br>Speak for<br><span style="color:var(--amber)">Themselves.</span></h2>
+</div>
+
+<div class="inf-outer">
+  <div class="inf-track" id="infTrack">
+
+    <!-- SET A -->
+    <div class="g-slide" data-src="./image/1.jpeg" data-label="Interior Detail" data-name="Leather Restoration">
+      <img src="./image/1.jpeg" alt="Leather Restoration" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/2.jpeg" data-label="Exterior Detail" data-name="Paint Decontamination">
+      <img src="./image/2.jpeg" alt="Paint Decontamination" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/3.jpeg" data-label="Engine Bay" data-name="Steam Deep Clean">
+      <img src="./image/3.jpeg" alt="Steam Deep Clean" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/4.jpeg" data-label="Full Detail" data-name="Showroom Finish">
+      <img src="./image/4.jpeg" alt="Showroom Finish" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/5.jpeg" data-label="Wheels & Tires" data-name="Iron Decontamination">
+      <img src="./image/5.jpeg" alt="Iron Decontamination" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/6.jpeg" data-label="Interior" data-name="Dashboard & Glass">
+      <img src="./image/6.jpeg" alt="Dashboard & Glass" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/7.jpeg" data-label="Exterior" data-name="Snow Foam Wash">
+      <img src="./image/7.jpeg" alt="Snow Foam Wash" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/8.jpeg" data-label="Detail Work" data-name="Hand Polish">
+      <img src="./image/8.jpeg" alt="Hand Polish" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/9.jpeg" data-label="Full Detail" data-name="Ceramic Coating">
+      <img src="./image/9.jpeg" alt="Ceramic Coating" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+
+    <!-- SET B (clones for seamless loop) -->
+    <div class="g-slide" data-src="./image/1.jpeg" data-label="Interior Detail" data-name="Leather Restoration">
+      <img src="./image/1.jpeg" alt="Leather Restoration" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/2.jpeg" data-label="Exterior Detail" data-name="Paint Decontamination">
+      <img src="./image/2.jpeg" alt="Paint Decontamination" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/3.jpeg" data-label="Engine Bay" data-name="Steam Deep Clean">
+      <img src="./image/3.jpeg" alt="Steam Deep Clean" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/4.jpeg" data-label="Full Detail" data-name="Showroom Finish">
+      <img src="./image/4.jpeg" alt="Showroom Finish" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/5.jpeg" data-label="Wheels & Tires" data-name="Iron Decontamination">
+      <img src="./image/5.jpeg" alt="Iron Decontamination" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/6.jpeg" data-label="Interior" data-name="Dashboard & Glass">
+      <img src="./image/6.jpeg" alt="Dashboard & Glass" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/7.jpeg" data-label="Exterior" data-name="Snow Foam Wash">
+      <img src="./image/7.jpeg" alt="Snow Foam Wash" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/8.jpeg" data-label="Detail Work" data-name="Hand Polish">
+      <img src="./image/8.jpeg" alt="Hand Polish" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div class="g-slide" data-src="./image/9.jpeg" data-label="Full Detail" data-name="Ceramic Coating">
+      <img src="./image/9.jpeg" alt="Ceramic Coating" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:1.6rem 3rem 0;">
+  <span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--subtle);">&#8592;&nbsp; Swipe or drag to browse &nbsp;&#8594;</span>
+</div>
+
+<script>
+(function(){
+  var track    = document.getElementById('infTrack');
+  var lightbox = document.getElementById('g-lightbox');
+  var lbImg    = document.getElementById('lb-img');
+  var lbCap    = document.getElementById('g-lightbox-caption');
+  var lbClose  = document.getElementById('lbClose');
+  var lbPrev   = document.getElementById('lb-prev');
+  var lbNext   = document.getElementById('lb-next');
+
+  var allSlides = Array.from(document.querySelectorAll('.g-slide'));
+  var setA = allSlides.slice(0, allSlides.length / 2);  // 9 unique
+  var lbIndex = 0;
+
+  // ═══════════ CAROUSEL: JS-driven infinite scroll ═══════════
+  var pos = 0;              // current translateX (negative moves left)
+  var speed = 0.5;          // auto-scroll px per frame
+  var halfWidth = 0;        // width of Set A (one full loop)
+  var autoScroll = true;
+  var rafId = null;
+
+  function measure(){
+    // total scrollWidth / 2 = width of one set (since we duplicate)
+    halfWidth = track.scrollWidth / 2;
+  }
+  measure();
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
+  // re-measure once images load
+  track.querySelectorAll('img').forEach(function(img){
+    if(!img.complete) img.addEventListener('load', measure);
+  });
+
+  function applyPos(){
+    // wrap seamlessly
+    if(pos <= -halfWidth) pos += halfWidth;
+    if(pos > 0)           pos -= halfWidth;
+    track.style.transform = 'translateX(' + pos + 'px)';
+  }
+
+  function loop(){
+    if(autoScroll && !isDown){
+      pos -= speed;
+      applyPos();
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+  loop();
+
+  // pause on hover (desktop)
+  track.addEventListener('mouseenter', function(){ autoScroll = false; });
+  track.addEventListener('mouseleave', function(){ if(!isDown) autoScroll = true; });
+
+  // ═══════════ DRAG (mouse) + SWIPE (touch) ═══════════
+  var isDown=false, startX=0, startPos=0, didDrag=false;
+
+  function pointerDown(x){
+    isDown=true; didDrag=false;
+    startX=x; startPos=pos;
+    autoScroll=false;
+    track.classList.add('dragging');
+  }
+  function pointerMove(x){
+    if(!isDown) return;
+    var dx = x - startX;
+    if(Math.abs(dx) > 5) didDrag=true;
+    pos = startPos + dx;
+    applyPos();
+  }
+  function pointerUp(){
+    if(!isDown) return;
+    isDown=false;
+    track.classList.remove('dragging');
+    autoScroll=true;
+    setTimeout(function(){ didDrag=false; }, 60);
+  }
+
+  // mouse
+  track.addEventListener('mousedown', function(e){ e.preventDefault(); pointerDown(e.clientX); });
+  document.addEventListener('mousemove', function(e){ pointerMove(e.clientX); });
+  document.addEventListener('mouseup', pointerUp);
+
+  // touch
+  track.addEventListener('touchstart', function(e){ pointerDown(e.touches[0].clientX); }, {passive:true});
+  track.addEventListener('touchmove', function(e){ pointerMove(e.touches[0].clientX); }, {passive:true});
+  track.addEventListener('touchend', pointerUp);
+
+  // ═══════════ LIGHTBOX ═══════════
+  function openLightbox(idx){
+    lbIndex = idx;
+    var slide = setA[lbIndex];
+    var src = slide.getAttribute('data-src');
+    if(!src || src.trim()===''){
+      var im = slide.querySelector('img');
+      if(im) src = im.getAttribute('src');
+    }
+    if(src && src.trim()!==''){
+      lbImg.src = src; lbImg.style.display='block';
+    } else {
+      lbImg.src=''; lbImg.style.display='none';
+    }
+    lbCap.textContent = slide.getAttribute('data-label') + ' \u2014 ' + slide.getAttribute('data-name');
+    lightbox.classList.add('open');
+    document.body.style.overflow='hidden';
+    autoScroll=false;
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    document.body.style.overflow='';
+    autoScroll=true;
+    lbImg.src='';
+  }
+  function lbStep(dir){
+    lbIndex = (lbIndex + dir + setA.length) % setA.length;
+    openLightbox(lbIndex);
+  }
+
+  // click to open (ignore drag)
+  allSlides.forEach(function(slide, i){
+    slide.addEventListener('click', function(){
+      if(didDrag) return;
+      openLightbox(i % setA.length);
+    });
+  });
+
+  lbClose.addEventListener('click', closeLightbox);
+  lbPrev.addEventListener('click', function(e){ e.stopPropagation(); lbStep(-1); });
+  lbNext.addEventListener('click', function(e){ e.stopPropagation(); lbStep(1); });
+
+  document.addEventListener('keydown', function(e){
+    if(!lightbox.classList.contains('open')) return;
+    if(e.key==='Escape')     closeLightbox();
+    if(e.key==='ArrowLeft')  lbStep(-1);
+    if(e.key==='ArrowRight') lbStep(1);
+  });
+
+  lightbox.addEventListener('click', function(e){ if(e.target===lightbox) closeLightbox(); });
+
+  // lightbox swipe
+  var lbTX=0;
+  lightbox.addEventListener('touchstart', function(e){ lbTX=e.touches[0].clientX; }, {passive:true});
+  lightbox.addEventListener('touchend', function(e){
+    var dx=e.changedTouches[0].clientX-lbTX;
+    if(Math.abs(dx)>50) lbStep(dx<0?1:-1);
+  });
+
+})();
+</script>
+</section>
+<!-- ═══════════════════ END GALLERY ═══════════════════ -->
+
+
+
 <!-- SERVICES -->
 <section id="services">
   <div class="section-tag">Our packages</div>
@@ -599,46 +1111,38 @@
       <div class="service-icon">◈</div>
       <div class="service-name">Premium Interior Detail</div>
       <p class="service-desc">A deep, systematic interior restoration — every surface treated with professional-grade product and care.</p>
-      <a href="#booking" class="service-btn">Get Quote →</a>
-      <span class="service-savings"></span>
+      <div class="service-price-label">Starting From</div>
+      <div class="service-price-display">
+        <span class="spd-sup">$</span>
+        <span class="spd-amount">120</span>
+      </div>
       <ul class="service-includes">
         <li>Full vacuum & fabric shampoo</li>
-        <li>Leather conditioning</li>
+        <li>Carpet & salt extraction</li>
         <li>Dashboard & trim clean</li>
         <li>Door jambs & cup holders</li>
-        <li>Interior steam cleaning</li>
+        <li>Interior window clean</li>
       </ul>
     </div>
     <div class="service-card">
       <span class="service-num">02</span>
       <div class="service-icon">◉</div>
-      <div class="service-name">Premium Full Detail</div>
+      <div class="service-name">Premium Exterior Detail</div>
       <p class="service-desc">Inside and out — the complete treatment for a genuine showroom-ready finish from top to tyre.</p>
-      <a href="#booking" class="service-btn">Get Quote →</a>
-      <span class="service-savings"></span>
+      <div class="service-price-label">Starting From</div>
+      <div class="service-price-display">
+        <span class="spd-sup">$</span>
+        <span class="spd-amount">80</span>
+      </div>
       <ul class="service-includes">
-        <li>Everything in interior detail</li>
+        <li>Pre-rinse & bug removal</li>
         <li>Exterior hand wash & dry</li>
+        <li>Exterior protection & gloss</li>
         <li>Tire & trim dressing</li>
-        <li>Exterior window polish</li>
-        <li>Engine bay detail</li>
+        <li>Exterior windows & windshield</li>
       </ul>
     </div>
-    <div class="service-card">
-      <div class="service-badge">Best Value</div>
-      <span class="service-num">03</span>
-      <div class="service-icon">◆</div>
-      <div class="service-name">Monthly Membership</div>
-      <p class="service-desc">One full detail every month, locked in at the member rate. Priority scheduling, no surprises.</p>
-      <a href="#booking" class="service-btn">Get Quote →</a>
-      <span class="service-savings">Save $100 vs. pay per visit</span>
-      <ul class="service-includes">
-        <li>1 full detail every month</li>
-        <li>Priority booking access</li>
-        <li>Locked-in member rate</li>
-        <li>Cancel anytime</li>
-      </ul>
-    </div>
+
   </div>
   <div style="margin-top: 2rem;" class="reveal">
     <p class="section-tag" style="margin-bottom: 1rem;">Add-ons</p>
@@ -719,19 +1223,16 @@
     </ul>
     <div class="why-visual reveal">
       <div class="why-visual-stat">
-        <div class="why-visual-stat-num">4<span>.7★</span></div>
+        <div class="why-visual-stat-num">5<span>.0★</span></div>
         <div class="why-visual-stat-label">Average client rating</div>
       </div>
       <div class="why-divider"></div>
       <div class="why-visual-stat">
-        <div class="why-visual-stat-num">11<span>+</span></div>
+        <div class="why-visual-stat-num">20<span>+</span></div>
         <div class="why-visual-stat-label">Professionals served</div>
       </div>
       <div class="why-divider"></div>
-      <div class="why-visual-stat">
-        <div class="why-visual-stat-num">$<span>100</span></div>
-        <div class="why-visual-stat-label">Saved monthly with membership</div>
-      </div>
+      
     </div>
   </div>
 </section>
@@ -740,7 +1241,7 @@
 <div class="testimonial-section">
   <div class="testimonial-inner">
     <p class="testimonial-quote">"I've tried three other mobile services. This is the only one I've re-booked."</p>
-    <p class="testimonial-attr">Aravind</p>
+    <p class="testimonial-attr">James T. · VP of Sales · Monthly Member</p>
   </div>
 </div>
 
@@ -769,26 +1270,54 @@
         <input class="form-input" id="bk-phone" type="tel" placeholder="+1 (555) 000-0000" required>
       </div>
       <div class="form-group">
+        <label class="form-label">Car Make &amp; Model <span style="color:var(--amber)">*</span></label>
+        <input class="form-input" id="bk-car" type="text" placeholder="e.g. 2021 BMW M3 / Honda Civic / Ford F-150" required>
+      </div>
+      <div class="form-group">
         <label class="form-label">Package</label>
         <select class="form-select" id="bk-package" required>
           <option value="">Select a package</option>
-          <option>Premium Interior Detail</option>
-          <option>Premium Full Detail</option>
-          <option>Monthly Membership</option>
+          <option>Premium Interior Detail — $120</option>
+          <option>Premium Exterior Detail — $80</option>
         </select>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Preferred date</label>
-          <input class="form-input" id="bk-date" type="date" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Preferred time</label>
-          <select class="form-select" id="bk-time">
-            <option>Mon - Fri (6pm–9pm)</option>
-            <option>Sat (7am–9pm)</option>
-            <option>Sun (1pm–9pm)</option>
-          </select>
+      <div class="form-group">
+        <label class="form-label">Preferred date</label>
+        <input class="form-input" id="bk-date" type="date" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Add-On Services <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:300;text-transform:uppercase;letter-spacing:0.1em;">(select all that apply)</span></label>
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:0.6rem;
+          margin-top:0.4rem;
+        " id="addon-grid">
+          <label class="addon-check-label">
+            <input type="checkbox" class="addon-cb" value="Steam Cleaning">
+            <span class="addon-check-box"></span>
+            <span class="addon-check-text">Steam Cleaning - $20</span>
+          </label>
+          <label class="addon-check-label">
+            <input type="checkbox" class="addon-cb" value="Engine Bay Detail">
+            <span class="addon-check-box"></span>
+            <span class="addon-check-text">Engine Bay - $30</span>
+          </label>
+          <label class="addon-check-label">
+            <input type="checkbox" class="addon-cb" value="Seat Extraction">
+            <span class="addon-check-box"></span>
+            <span class="addon-check-text">Seat Extraction - $30</span>
+          </label>
+          <label class="addon-check-label">
+            <input type="checkbox" class="addon-cb" value="Pet Hair Removal">
+            <span class="addon-check-box"></span>
+            <span class="addon-check-text">Pet Hair Removal - $40</span>
+          </label>
+          <label class="addon-check-label">
+            <input type="checkbox" class="addon-cb" value="Bio / Biohazard Clean">
+            <span class="addon-check-box"></span>
+            <span class="addon-check-text">Biohazard Clean (Blood/Vomit) - $50</span>
+          </label>
         </div>
       </div>
       <div class="form-group">
@@ -811,7 +1340,7 @@
       <div class="booking-info-item">
         <div class="booking-info-label">Availability</div>
         <div class="booking-info-value">Mon – Fri, 6pm – 9pm</div>
-        <div class="booking-info-value">Sat, 7am – 9pm</div>
+        <div class="booking-info-value">sat, 7am – 9pm</div>
         <div class="booking-info-value">Sun, 1 pm – 9pm</div>
         <div class="booking-info-sub">Members get priority scheduling. Most slots fill within 48 hours.</div>
       </div>
@@ -830,6 +1359,7 @@
   <p class="footer-copy">© 2026 DetailX Labs. All rights reserved.</p>
   <div class="footer-links">
     <a href="#services">Services</a>
+    <a href="#gallery">Gallery</a>
     <a href="#process">Process</a>
     <a href="#cost">Our Standard</a>
     <a href="#booking">Book</a>
@@ -837,6 +1367,59 @@
 </footer>
 
 <script>
+  // ── HERO VIDEO (local, muted, infinite loop) ──
+  (function(){
+    var vid         = document.getElementById('heroVideo');
+    var placeholder = document.getElementById('heroVideoPlaceholder');
+    var poster      = document.getElementById('heroPosterFallback');
+    if(!vid) return;
+
+    // force muted + loop (required for autoplay in all browsers)
+    vid.muted = true;
+    vid.loop = true;
+    vid.setAttribute('muted','');
+    vid.playsInline = true;
+
+    function hidePlaceholder(){
+      if(placeholder){
+        placeholder.style.transition = 'opacity 0.8s ease';
+        placeholder.style.opacity = '0';
+        setTimeout(function(){ if(placeholder) placeholder.style.display='none'; }, 800);
+      }
+    }
+
+    vid.addEventListener('canplay', function(){
+      vid.classList.add('loaded');
+      hidePlaceholder();
+      if(poster) poster.style.opacity = '0';
+    });
+
+    vid.addEventListener('error', function(){
+      hidePlaceholder();
+      if(poster) poster.style.opacity = '1';
+    });
+
+    // ensure it keeps looping even if a browser hiccups
+    vid.addEventListener('ended', function(){
+      vid.currentTime = 0;
+      vid.play().catch(function(){});
+    });
+
+    // attempt autoplay
+    var playPromise = vid.play();
+    if(playPromise !== undefined){
+      playPromise.catch(function(){
+        // some browsers need a user gesture; retry on first interaction
+        document.addEventListener('click', function once(){
+          vid.play().catch(function(){});
+          document.removeEventListener('click', once);
+        });
+      });
+    }
+
+    vid.load();
+  })();
+
   // ── CURSOR ──
   const cursor = document.getElementById('cursor');
   const ring = document.getElementById('cursorRing');
@@ -889,13 +1472,18 @@
     const lastName  = document.getElementById('bk-lastname').value.trim();
     const email     = document.getElementById('bk-email').value.trim();
     const phone     = document.getElementById('bk-phone').value.trim();
+    const car       = document.getElementById('bk-car').value.trim();
     const pkg       = document.getElementById('bk-package').value.trim();
     const date      = document.getElementById('bk-date').value;
-    const time      = document.getElementById('bk-time').value;
     const notes     = document.getElementById('bk-notes').value.trim();
 
+    // Collect checked addons
+    const addonBoxes  = document.querySelectorAll('.addon-cb:checked');
+    const addons      = Array.from(addonBoxes).map(function(cb){ return cb.value; });
+    const addonsText  = addons.length > 0 ? addons.join(', ') : 'None';
+
     // Validate required fields
-    if (!firstName || !lastName || !email || !phone || !pkg || !date) {
+    if (!firstName || !lastName || !email || !phone || !car || !pkg || !date) {
       alert('Please fill in all required fields before submitting.');
       return;
     }
@@ -920,8 +1508,12 @@
 *━━━━━━━━━━━━━━━━━━━━━━*
 🧽 *SERVICE REQUESTED*
 • Package: ${pkg}
+• Car: ${car}
 • Date: ${dateFormatted}
-• Time: ${time}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+✨ *ADD-ON SERVICES*
+${addonsText}
 
 *━━━━━━━━━━━━━━━━━━━━━━*
 📍 *LOCATION / NOTES*
