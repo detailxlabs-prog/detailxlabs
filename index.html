@@ -254,12 +254,13 @@
   .hero-tag::before { content: ''; display: block; width: 40px; height: 1px; background: var(--amber); }
   .hero-h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(72px, 12vw, 140px);
-    line-height: 0.9; letter-spacing: 0.02em;
+    font-size: clamp(48px, 9vw, 120px);
+    line-height: 0.95; letter-spacing: 0.02em;
     color: var(--white); position: relative;
+    white-space: nowrap;
     opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
   }
-  .hero-h1 .line2 { color: var(--amber); display: block; }
+  .hero-h1 .accent-x { color: var(--amber); }
   .hero-bottom {
     display: flex; align-items: flex-end; justify-content: space-between;
     margin-top: 3rem;
@@ -577,8 +578,32 @@
   /* TESTIMONIAL */
   .testimonial-section { background: var(--amber); padding: 6rem 3rem; }
   .testimonial-inner { max-width: 860px; margin: 0 auto; text-align: center; }
-  .testimonial-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 5vw, 56px); letter-spacing: 0.02em; color: var(--black); line-height: 1.1; margin-bottom: 2rem; }
+  .testimonial-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(22px, 3vw, 34px); letter-spacing: 0.02em; color: var(--black); line-height: 1.25; margin-bottom: 2rem; max-width: 780px; }
   .testimonial-attr { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(10,10,10,0.6); }
+  /* ── Testimonial carousel ── */
+  .testi-carousel { position: relative; overflow: hidden; max-width: 900px; margin: 0 auto; }
+  .testi-track { display: flex; transition: transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+  .testi-slide {
+    min-width: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 0 1rem;
+  }
+  .testi-stars {
+    font-size: 20px; letter-spacing: 4px;
+    color: var(--black); margin-bottom: 1.5rem;
+  }
+  .testi-dots {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 2.5rem;
+  }
+  .testi-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(10,10,10,0.25);
+    cursor: pointer; transition: all 0.3s;
+    border: none; padding: 0;
+  }
+  .testi-dot.active { background: var(--black); width: 26px; border-radius: 4px; }
 
   /* BOOKING */
   .booking-section { background: var(--dark); }
@@ -749,7 +774,7 @@
   <div class="hero-accent"></div>
 
   <div class="hero-tag">Mobile Detailing · Premium Grade</div>
-  <h1 class="hero-h1">Detail<span class="line2">X Labs.</span></h1>
+  <h1 class="hero-h1">Detail<span class="accent-x">X</span> Labs.</h1>
   <div class="hero-bottom">
     <p class="hero-sub">Professional-grade mobile detailing delivered to your driveway, office, or wherever the day takes you. Zero downtime. Showroom results.</p>
     <div class="hero-actions">
@@ -1343,10 +1368,84 @@
 <!-- TESTIMONIAL -->
 <div class="testimonial-section">
   <div class="testimonial-inner">
-    <p class="testimonial-quote">"I've tried three other mobile services. This is the only one I've re-booked."</p>
-    <p class="testimonial-attr">James T. · VP of Sales · Monthly Member</p>
+    <div class="testi-carousel">
+      <div class="testi-track" id="testiTrack">
+      <div class="testi-slide">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testimonial-quote">Hands down, best detailing company in the London area. Very professional and detailed with their interior clean. My truck has never looked better. I would highly recommend to anyone who wants their vehicle cleaned.</p>
+        <p class="testimonial-attr">Shane Hunt · Google Review</p>
+      </div>
+      <div class="testi-slide">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testimonial-quote">I'm very happy with the service. Will use them again.</p>
+        <p class="testimonial-attr">Nidal · Google Review</p>
+      </div>
+      <div class="testi-slide">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testimonial-quote">The detailing work by them was awesome and my car looked better than new again. Would definitely recommend them to anyone who wants an awesome looking vehicle after they do what they do best.</p>
+        <p class="testimonial-attr">Anup Prem · Google Review</p>
+      </div>
+      <div class="testi-slide">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testimonial-quote">Thank you guys for showing up on time at my house and for the premium service provided. Would highly recommend — the best in London, ON.</p>
+        <p class="testimonial-attr">Aravind V · Google Review</p>
+      </div>
+      <div class="testi-slide">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testimonial-quote">Solid 10/10, definitely coming back 🤝</p>
+        <p class="testimonial-attr">Nico Raphael · Google Review</p>
+      </div>
+      </div>
+    </div>
+    <div class="testi-dots" id="testiDots">
+      <button class="testi-dot active" data-idx="0" aria-label="Review 1"></button>
+      <button class="testi-dot" data-idx="1" aria-label="Review 2"></button>
+      <button class="testi-dot" data-idx="2" aria-label="Review 3"></button>
+      <button class="testi-dot" data-idx="3" aria-label="Review 4"></button>
+      <button class="testi-dot" data-idx="4" aria-label="Review 5"></button>
+    </div>
   </div>
 </div>
+
+<script>
+(function(){
+  var track = document.getElementById('testiTrack');
+  var dots  = Array.from(document.querySelectorAll('.testi-dot'));
+  var total = dots.length;
+  var idx = 0;
+  var timer = null;
+
+  function go(i){
+    idx = (i + total) % total;
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    dots.forEach(function(d, n){ d.classList.toggle('active', n === idx); });
+  }
+
+  function next(){ go(idx + 1); }
+
+  function startAuto(){ timer = setInterval(next, 5000); }
+  function stopAuto(){ clearInterval(timer); }
+
+  dots.forEach(function(d){
+    d.addEventListener('click', function(){
+      stopAuto();
+      go(parseInt(d.getAttribute('data-idx')));
+      startAuto();
+    });
+  });
+
+  // swipe support
+  var startX = 0;
+  track.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; stopAuto(); }, {passive:true});
+  track.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - startX;
+    if(Math.abs(dx) > 50) go(dx < 0 ? idx + 1 : idx - 1);
+    startAuto();
+  });
+
+  startAuto();
+})();
+</script>
 
 <!-- BOOKING -->
 <section class="booking-section" id="booking">
