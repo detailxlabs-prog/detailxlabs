@@ -939,6 +939,13 @@
   cursor:grab;
   will-change:transform;
 }
+/* When there are too few photos to scroll, show them once, centered. */
+.inf-track.inf-static{
+  width:100%;
+  justify-content:center;
+  cursor:default;
+  flex-wrap:wrap;
+}
 .inf-track.dragging{cursor:grabbing;}
 .inf-track.dragging img{pointer-events:none;}
 
@@ -1025,34 +1032,8 @@
       <img src="./image/9.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
     </div>
 
-    <!-- SET B (clones for seamless loop) -->
-    <div class="g-slide" data-src="./image/1.jpeg" data-label="Interior Detail" data-name="Leather Restoration">
-      <img src="./image/1.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/2.jpeg" data-label="Exterior Detail" data-name="Paint Decontamination">
-      <img src="./image/2.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/3.jpeg" data-label="Engine Bay" data-name="Steam Deep Clean">
-      <img src="./image/3.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/4.jpeg" data-label="Full Detail" data-name="Showroom Finish">
-      <img src="./image/4.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/5.jpeg" data-label="Wheels & Tires" data-name="Iron Decontamination">
-      <img src="./image/5.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/6.jpeg" data-label="Interior" data-name="Dashboard & Glass">
-      <img src="./image/6.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/7.jpeg" data-label="Exterior" data-name="Snow Foam Wash">
-      <img src="./image/7.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/8.jpeg" data-label="Detail Work" data-name="Hand Polish">
-      <img src="./image/8.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
-    <div class="g-slide" data-src="./image/9.jpeg" data-label="Full Detail" data-name="Ceramic Coating">
-      <img src="./image/9.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;">
-    </div>
+    <!-- Clones for the seamless loop are added automatically by JS when there
+         are enough photos to fill the strip. -->
 
   </div>
 </div>
@@ -1062,7 +1043,7 @@
 </div>
 
 <script>
-(function(){
+window.initGalleryCarousel = function(){
   var track    = document.getElementById('infTrack');
   var lightbox = document.getElementById('g-lightbox');
   var lbImg    = document.getElementById('lb-img');
@@ -1071,27 +1052,57 @@
   var lbPrev   = document.getElementById('lb-prev');
   var lbNext   = document.getElementById('lb-next');
 
-  var allSlides = Array.from(document.querySelectorAll('.g-slide'));
-  var setA = allSlides.slice(0, allSlides.length / 2);  // 9 unique
+  // The unique photos currently in the track (before any cloning).
+  var setA = Array.from(track.children);
   var lbIndex = 0;
 
   // ═══════════ CAROUSEL: JS-driven infinite scroll ═══════════
   var pos = 0;              // current translateX (negative moves left)
   var speed = 0.5;          // auto-scroll px per frame
-  var halfWidth = 0;        // width of Set A (one full loop)
+  var halfWidth = 0;        // width of one set (one full loop)
   var autoScroll = true;
   var rafId = null;
+  var looping = false;      // true once we've cloned & started the marquee
+
+  function outerWidth(){
+    var outer = track.parentElement;
+    return outer ? outer.clientWidth : window.innerWidth;
+  }
+
+  // Decide whether we have enough photos to scroll. If the unique set doesn't
+  // comfortably fill the strip, show them once (centered, static) instead of
+  // cloning — so a single photo never looks like a duplicate.
+  function setupMode(){
+    // remove any clones from a previous run
+    while(track.children.length > setA.length){ track.removeChild(track.lastChild); }
+    track.classList.remove('inf-static');
+    track.style.transform = '';
+
+    var oneSetWidth = track.scrollWidth;   // width of the unique photos
+    if(oneSetWidth > outerWidth() + 40){
+      // enough content → clone once for a seamless infinite loop
+      setA.forEach(function(node){ track.appendChild(node.cloneNode(true)); });
+      wireClonedSlides();
+      halfWidth = track.scrollWidth / 2;
+      looping = true;
+      autoScroll = true;
+    } else {
+      // too few → static centered row, no auto-scroll, no clones
+      track.classList.add('inf-static');
+      looping = false;
+      autoScroll = false;
+    }
+  }
 
   function measure(){
-    // total scrollWidth / 2 = width of one set (since we duplicate)
-    halfWidth = track.scrollWidth / 2;
+    if(looping) halfWidth = track.scrollWidth / 2;
   }
-  measure();
-  window.addEventListener('resize', measure);
-  window.addEventListener('load', measure);
-  // re-measure once images load
+  setupMode();
+  window.addEventListener('resize', function(){ pos = 0; setupMode(); });
+  window.addEventListener('load', function(){ pos = 0; setupMode(); });
+  // re-evaluate once images load (their real width matters)
   track.querySelectorAll('img').forEach(function(img){
-    if(!img.complete) img.addEventListener('load', measure);
+    if(!img.complete) img.addEventListener('load', function(){ pos = 0; setupMode(); });
   });
 
   function applyPos(){
@@ -1111,13 +1122,14 @@
   loop();
 
   // pause on hover (desktop)
-  track.addEventListener('mouseenter', function(){ autoScroll = false; });
-  track.addEventListener('mouseleave', function(){ if(!isDown) autoScroll = true; });
+  track.addEventListener('mouseenter', function(){ if(looping) autoScroll = false; });
+  track.addEventListener('mouseleave', function(){ if(looping && !isDown) autoScroll = true; });
 
   // ═══════════ DRAG (mouse) + SWIPE (touch) ═══════════
   var isDown=false, startX=0, startPos=0, didDrag=false;
 
   function pointerDown(x){
+    if(!looping) return;          // no dragging when photos are shown statically
     isDown=true; didDrag=false;
     startX=x; startPos=pos;
     autoScroll=false;
@@ -1134,7 +1146,7 @@
     if(!isDown) return;
     isDown=false;
     track.classList.remove('dragging');
-    autoScroll=true;
+    if(looping) autoScroll=true;
     setTimeout(function(){ didDrag=false; }, 60);
   }
 
@@ -1177,13 +1189,18 @@
     openLightbox(lbIndex);
   }
 
-  // click to open (ignore drag)
-  allSlides.forEach(function(slide, i){
+  // click to open (ignore drag). Reusable so clones get handlers too.
+  function attachClick(slide, idx){
     slide.addEventListener('click', function(){
       if(didDrag) return;
-      openLightbox(i % setA.length);
+      openLightbox(idx);
     });
-  });
+  }
+  function wireClonedSlides(){
+    var clones = Array.prototype.slice.call(track.children, setA.length);
+    clones.forEach(function(node, i){ attachClick(node, i % setA.length); });
+  }
+  setA.forEach(function(slide, i){ attachClick(slide, i); });
 
   lbClose.addEventListener('click', closeLightbox);
   lbPrev.addEventListener('click', function(e){ e.stopPropagation(); lbStep(-1); });
@@ -1206,7 +1223,7 @@
     if(Math.abs(dx)>50) lbStep(dx<0?1:-1);
   });
 
-})();
+};
 </script>
 </section>
 <!-- ═══════════════════ END GALLERY ═══════════════════ -->
@@ -1408,12 +1425,14 @@
 </div>
 
 <script>
-(function(){
+window.initTestiCarousel = function(){
   var track = document.getElementById('testiTrack');
   var dots  = Array.from(document.querySelectorAll('.testi-dot'));
   var total = dots.length;
   var idx = 0;
   var timer = null;
+
+  if(total === 0) return;
 
   function go(i){
     idx = (i + total) % total;
@@ -1444,7 +1463,7 @@
   });
 
   startAuto();
-})();
+};
 </script>
 
 <!-- BOOKING -->
@@ -1734,6 +1753,78 @@ _Sent from DetailX Labs website_`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
     window.open(url, '_blank');
   }
+</script>
+
+<!-- ═══════════════════ FIREBASE: dynamic gallery + reviews ═══════════════════ -->
+<script type="module">
+import { firebaseConfig, FIREBASE_ENABLED, FB_BASE } from './firebase-config.js';
+
+function escapeHtml(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Rebuild the gallery strip from Firestore data. Duplicates the set (A+B)
+// so the existing infinite-scroll loop stays seamless.
+function rebuildGallery(items){
+  const track = document.getElementById('infTrack');
+  if(!track || !items.length) return;
+  const slide = (it) =>
+    `<div class="g-slide" data-src="${escapeHtml(it.url)}" data-label="${escapeHtml(it.label)}" data-name="${escapeHtml(it.name)}">
+       <img src="${escapeHtml(it.url)}" alt="${escapeHtml(it.name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+     </div>`;
+  // Only the unique photos — initGalleryCarousel() clones them for the
+  // seamless loop when there are enough to fill the strip.
+  track.innerHTML = items.map(slide).join('');
+}
+
+// Rebuild the testimonial carousel + dots from Firestore data.
+function rebuildReviews(items){
+  const track = document.getElementById('testiTrack');
+  const dots  = document.getElementById('testiDots');
+  if(!track || !dots || !items.length) return;
+  track.innerHTML = items.map(r => `
+      <div class="testi-slide">
+        <div class="testi-stars">${'★'.repeat(Math.max(1, Math.min(5, r.rating || 5)))}</div>
+        <p class="testimonial-quote">${escapeHtml(r.quote)}</p>
+        <p class="testimonial-attr">${escapeHtml(r.author)} · Google Review</p>
+      </div>`).join('');
+  dots.innerHTML = items.map((_, i) =>
+    `<button class="testi-dot${i===0?' active':''}" data-idx="${i}" aria-label="Review ${i+1}"></button>`).join('');
+}
+
+async function boot(){
+  if(FIREBASE_ENABLED){
+    try{
+      const { initializeApp } = await import(`${FB_BASE}/firebase-app.js`);
+      const { getFirestore, collection, getDocs, query, orderBy } = await import(`${FB_BASE}/firebase-firestore.js`);
+      const app = initializeApp(firebaseConfig);
+      const db  = getFirestore(app);
+
+      // Gallery — oldest first (new photos append to the end of the strip)
+      try{
+        const gSnap = await getDocs(query(collection(db, 'gallery'), orderBy('createdAt', 'asc')));
+        const gItems = gSnap.docs.map(d => d.data()).filter(d => d.url);
+        if(gItems.length) rebuildGallery(gItems);
+      }catch(e){ console.warn('Gallery fetch failed, using defaults:', e); }
+
+      // Reviews — newest first
+      try{
+        const rSnap = await getDocs(query(collection(db, 'reviews'), orderBy('createdAt', 'desc')));
+        const rItems = rSnap.docs.map(d => d.data()).filter(d => d.quote);
+        if(rItems.length) rebuildReviews(rItems);
+      }catch(e){ console.warn('Reviews fetch failed, using defaults:', e); }
+    }catch(err){
+      console.warn('Firebase unavailable, using built-in content:', err);
+    }
+  }
+
+  // Always initialise the carousels — from Firestore content if it loaded,
+  // otherwise from the built-in fallback markup.
+  if(typeof window.initGalleryCarousel === 'function') window.initGalleryCarousel();
+  if(typeof window.initTestiCarousel === 'function')   window.initTestiCarousel();
+}
+
+boot();
 </script>
 </body>
 </html>

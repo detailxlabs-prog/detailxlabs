@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · DetailX Labs</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #161616;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.18);
+    --amber: #2EE800;
+    --amber-light: #52FF1A;
+    --amber-dim: rgba(46,232,0,0.12);
+    --white: #f5f2ed;
+    --muted: #888880;
+    --subtle: #444440;
+    --danger: #ff4d4d;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+  a { color: var(--amber); text-decoration: none; }
+
+  /* ── Top bar ── */
+  .admin-nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top:0; background: rgba(10,10,10,0.9);
+    backdrop-filter: blur(10px); z-index: 20;
+  }
+  .admin-logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.08em; }
+  .admin-logo span { color: var(--amber); }
+  .admin-nav-right { display:flex; align-items:center; gap:1.25rem; }
+  .admin-user { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.05em; }
+
+  .btn {
+    font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; font-weight:500;
+    border:none; border-radius:2px; cursor:pointer;
+    padding: 0.75rem 1.25rem; transition: background .2s, border-color .2s, color .2s;
+  }
+  .btn-primary { background: var(--amber); color: var(--black); }
+  .btn-primary:hover { background: var(--amber-light); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-ghost { background: transparent; border:1px solid var(--border-strong); color: var(--white); }
+  .btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+  .btn-danger { background:transparent; border:1px solid rgba(255,77,77,0.4); color:var(--danger); padding:0.5rem 0.85rem; }
+  .btn-danger:hover { background: var(--danger); color:#fff; border-color:var(--danger); }
+
+  /* ── Layout ── */
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+  .section-tag {
+    font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.2em;
+    text-transform:uppercase; color:var(--amber); margin-bottom:0.6rem;
+  }
+  h1.page-h { font-family:'Bebas Neue',sans-serif; font-size:clamp(34px,5vw,52px); letter-spacing:0.02em; line-height:1; margin-bottom:0.4rem; }
+  .page-sub { color:var(--muted); font-size:14px; margin-bottom:2.5rem; }
+
+  /* ── Tabs ── */
+  .tabs { display:flex; gap:8px; margin-bottom:2rem; border-bottom:1px solid var(--border); }
+  .tab {
+    font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--muted); background:none; border:none;
+    padding: 0.9rem 1.1rem; cursor:pointer; border-bottom:2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  .tab.active { color:var(--white); border-bottom-color: var(--amber); }
+  .panel { display:none; }
+  .panel.active { display:block; }
+
+  /* ── Cards / forms ── */
+  .card {
+    background: var(--card); border:1px solid var(--border);
+    border-radius:4px; padding:1.75rem; margin-bottom:2rem;
+  }
+  .card-title { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--amber); margin-bottom:1.25rem; }
+  .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:1.1rem; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .form-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  .form-input, .form-textarea, .form-select, .form-file {
+    background: var(--black); border:1px solid var(--border);
+    border-radius:2px; padding:0.85rem 1rem; color:var(--white);
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:300;
+    outline:none; transition:border-color .2s; width:100%;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--amber); }
+  .form-textarea { resize:vertical; min-height:110px; }
+  .form-file { padding:0.7rem; cursor:pointer; }
+  .form-select option { background: var(--card); }
+  .hint { font-size:11px; color:var(--subtle); }
+
+  /* ── Star picker ── */
+  .star-pick { display:flex; gap:4px; font-size:26px; cursor:pointer; }
+  .star-pick span { color: rgba(255,255,255,0.18); transition:color .15s; }
+  .star-pick span.on { color: var(--amber); }
+
+  /* ── Status message ── */
+  .msg { font-family:'DM Mono',monospace; font-size:12px; letter-spacing:0.05em; padding:0.75rem 1rem; border-radius:2px; margin-top:1rem; display:none; }
+  .msg.show { display:block; }
+  .msg.ok { background: var(--amber-dim); color: var(--amber); border:1px solid rgba(46,232,0,0.3); }
+  .msg.err { background: rgba(255,77,77,0.1); color: var(--danger); border:1px solid rgba(255,77,77,0.3); }
+
+  /* ── Item lists ── */
+  .list-title { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin:0.5rem 0 1rem; }
+  .g-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1rem; }
+  .g-item { position:relative; border:1px solid var(--border); border-radius:4px; overflow:hidden; background:var(--dark); }
+  .g-item img { width:100%; height:120px; object-fit:cover; display:block; }
+  .g-item-meta { padding:0.5rem 0.6rem; }
+  .g-item-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); }
+  .g-item-name { font-size:12px; color:var(--white); }
+  .g-item .btn-danger { position:absolute; top:6px; right:6px; padding:0.3rem 0.5rem; font-size:10px; }
+
+  .r-item { border:1px solid var(--border); border-radius:4px; padding:1rem 1.1rem; margin-bottom:0.85rem; display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; background:var(--dark); }
+  .r-item .r-stars { color:var(--amber); letter-spacing:2px; font-size:13px; }
+  .r-item .r-quote { font-size:14px; margin:0.35rem 0; line-height:1.5; }
+  .r-item .r-author { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .empty { color:var(--subtle); font-size:13px; font-style:italic; padding:1rem 0; }
+
+  /* ── Login screen ── */
+  #login-screen {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    padding:1.5rem; background: radial-gradient(circle at 50% 30%, #0f1a0f, var(--black) 70%); z-index:50;
+  }
+  .login-card { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:2.5rem; width:100%; max-width:380px; }
+  .login-card h2 { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:0.03em; margin-bottom:0.25rem; }
+  .login-card .page-sub { margin-bottom:2rem; }
+  #app { display:none; }
+
+  .config-warning {
+    background: rgba(255,77,77,0.08); border:1px solid rgba(255,77,77,0.35);
+    color:#ffb3b3; border-radius:4px; padding:1rem 1.25rem; margin-bottom:1.5rem;
+    font-size:13px; line-height:1.6;
+  }
+  .config-warning strong { color: var(--danger); }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(0,0,0,0.25); border-top-color:var(--black); border-radius:50%; animation:spin .7s linear infinite; vertical-align:-2px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media(max-width:600px){
+    .form-row { grid-template-columns:1fr; }
+    .wrap { padding:2rem 1.25rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="section-tag">Admin Access</div>
+    <h2>DetailX<span style="color:var(--amber)">.</span> Admin</h2>
+    <p class="page-sub">Sign in to manage gallery &amp; reviews.</p>
+
+    <div id="config-warning" class="config-warning" style="display:none;">
+      <strong>Firebase not configured yet.</strong><br>
+      Add your project keys to <code>firebase-config.js</code> before you can log in.
+      See <code>FIREBASE-SETUP.md</code> for instructions.
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="login-email" type="email" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary" id="login-btn" type="submit" style="width:100%; margin-top:0.5rem;">Sign In</button>
+      <div class="msg err" id="login-msg"></div>
+    </form>
+    <p style="margin-top:1.5rem; font-size:11px; color:var(--subtle); text-align:center;">
+      <a href="./index.html">← Back to website</a>
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+  <div class="admin-nav">
+    <div class="admin-logo">DetailX<span>.</span> Admin</div>
+    <div class="admin-nav-right">
+      <span class="admin-user" id="current-user"></span>
+      <a class="btn btn-ghost" href="./index.html" target="_blank">View site</a>
+      <button class="btn btn-ghost" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="section-tag">Content Manager</div>
+    <h1 class="page-h">Manage Your Site.</h1>
+    <p class="page-sub">Add gallery photos and Google reviews. Changes appear on the live site automatically.</p>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="gallery">Gallery Images</button>
+      <button class="tab" data-panel="reviews">Google Reviews</button>
+    </div>
+
+    <!-- ── GALLERY PANEL ── -->
+    <div class="panel active" id="panel-gallery">
+      <div class="card">
+        <div class="card-title">Add a photo to the gallery</div>
+        <form id="gallery-form">
+          <div class="form-group">
+            <label class="form-label">Photo</label>
+            <input class="form-file" id="g-file" type="file" accept="image/*" required>
+            <span class="hint">JPG / PNG / WebP. Large images are compressed automatically before upload.</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category label</label>
+              <input class="form-input" id="g-label" type="text" placeholder="Interior Detail" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="g-name" type="text" placeholder="Leather Restoration" required>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="g-submit" type="submit">Upload Photo</button>
+          <div class="msg" id="g-msg"></div>
+        </form>
+      </div>
+
+      <div class="list-title">Current gallery photos</div>
+      <div class="g-grid" id="g-list"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- ── REVIEWS PANEL ── -->
+    <div class="panel" id="panel-reviews">
+      <div class="card">
+        <div class="card-title">Add a Google review</div>
+        <form id="review-form">
+          <div class="form-group">
+            <label class="form-label">Rating</label>
+            <div class="star-pick" id="star-pick">
+              <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+            </div>
+            <input type="hidden" id="r-rating" value="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Review text</label>
+            <textarea class="form-textarea" id="r-quote" placeholder="Best detailing in London, my car has never looked better…" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reviewer name</label>
+            <input class="form-input" id="r-author" type="text" placeholder="Shane Hunt" required>
+          </div>
+          <button class="btn btn-primary" id="r-submit" type="submit">Add Review</button>
+          <div class="msg" id="r-msg"></div>
+        </form>
+      </div>
+
+      <div class="list-title">Current reviews</div>
+      <div id="r-list"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FIREBASE LOGIC ══════════════ -->
+<script type="module">
+import { firebaseConfig, FIREBASE_ENABLED, FB_BASE, cloudinaryConfig, CLOUDINARY_ENABLED } from './firebase-config.js';
+
+const $ = (id) => document.getElementById(id);
+
+// If config not filled in, block login and show a notice.
+if (!FIREBASE_ENABLED) {
+  $('config-warning').style.display = 'block';
+  $('login-btn').disabled = true;
+}
+
+let auth, db, fb = {};
+
+async function initFirebase() {
+  const appMod   = await import(`${FB_BASE}/firebase-app.js`);
+  const authMod  = await import(`${FB_BASE}/firebase-auth.js`);
+  const fsMod    = await import(`${FB_BASE}/firebase-firestore.js`);
+  const app = appMod.initializeApp(firebaseConfig);
+  auth = authMod.getAuth(app);
+  db = fsMod.getFirestore(app);
+  fb = { ...authMod, ...fsMod };
+  return app;
+}
+
+// Upload an image blob straight to Cloudinary (unsigned) and return its URL.
+async function uploadToCloudinary(blob, filename) {
+  if (!CLOUDINARY_ENABLED) {
+    throw new Error('Cloudinary not configured — add your cloud name & upload preset to firebase-config.js');
+  }
+  const form = new FormData();
+  form.append('file', blob);
+  form.append('upload_preset', cloudinaryConfig.uploadPreset);
+  if (filename) form.append('public_id', filename.replace(/\.[^.]+$/, ''));
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`, {
+    method: 'POST', body: form
+  });
+  const data = await res.json();
+  if (!res.ok || !data.secure_url) {
+    throw new Error((data.error && data.error.message) || 'Cloudinary upload failed');
+  }
+  return data.secure_url;
+}
+
+function showMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = 'msg show ' + (ok ? 'ok' : 'err');
+}
+
+// ── Boot ──
+if (FIREBASE_ENABLED) {
+  initFirebase().then(() => {
+    // Auth state listener
+    fb.onAuthStateChanged(auth, (user) => {
+      if (user) {
+        $('login-screen').style.display = 'none';
+        $('app').style.display = 'block';
+        $('current-user').textContent = user.email;
+        loadGallery();
+        loadReviews();
+      } else {
+        $('login-screen').style.display = 'flex';
+        $('app').style.display = 'none';
+      }
+    });
+
+    // Login
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = $('login-msg'); msg.className = 'msg err';
+      $('login-btn').disabled = true;
+      try {
+        await fb.signInWithEmailAndPassword(auth, $('login-email').value.trim(), $('login-password').value);
+      } catch (err) {
+        showMsg(msg, prettyAuthError(err), false);
+      } finally {
+        $('login-btn').disabled = false;
+      }
+    });
+
+    $('logout-btn').addEventListener('click', () => fb.signOut(auth));
+  }).catch((err) => {
+    console.error(err);
+    $('config-warning').style.display = 'block';
+    $('config-warning').innerHTML = '<strong>Could not load Firebase.</strong><br>' + err.message;
+  });
+}
+
+function prettyAuthError(err) {
+  const c = (err && err.code) || '';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found'))
+    return 'Incorrect email or password.';
+  if (c.includes('invalid-email')) return 'That email address is not valid.';
+  if (c.includes('too-many-requests')) return 'Too many attempts. Try again later.';
+  return (err && err.message) || 'Sign-in failed.';
+}
+
+// ═══════════ TABS ═══════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ═══════════ STAR PICKER ═══════════
+const starPick = $('star-pick');
+function paintStars(v) {
+  starPick.querySelectorAll('span').forEach(s => s.classList.toggle('on', +s.dataset.v <= v));
+}
+paintStars(5);
+starPick.querySelectorAll('span').forEach(s => {
+  s.addEventListener('mouseenter', () => paintStars(+s.dataset.v));
+  s.addEventListener('click', () => { $('r-rating').value = s.dataset.v; paintStars(+s.dataset.v); });
+});
+starPick.addEventListener('mouseleave', () => paintStars(+$('r-rating').value));
+
+// ═══════════ IMAGE COMPRESSION ═══════════
+function compressImage(file, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error('Compression failed')),
+        'image/jpeg', quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Invalid image')); };
+    img.src = url;
+  });
+}
+
+// ═══════════ GALLERY CRUD ═══════════
+async function loadGallery() {
+  const list = $('g-list');
+  try {
+    const q = fb.query(fb.collection(db, 'gallery'), fb.orderBy('createdAt', 'asc'));
+    const snap = await fb.getDocs(q);
+    if (snap.empty) { list.innerHTML = '<div class="empty">No photos yet — add your first above.</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const el = document.createElement('div');
+      el.className = 'g-item';
+      el.innerHTML = `
+        <img src="${d.url}" alt="">
+        <div class="g-item-meta">
+          <div class="g-item-label">${escapeHtml(d.label || '')}</div>
+          <div class="g-item-name">${escapeHtml(d.name || '')}</div>
+        </div>
+        <button class="btn btn-danger" title="Delete">✕</button>`;
+      el.querySelector('.btn-danger').addEventListener('click', () => deleteGallery(docSnap.id));
+      list.appendChild(el);
+    });
+  } catch (err) {
+    list.innerHTML = `<div class="empty">Could not load photos: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+$('gallery-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('g-submit'), msg = $('g-msg');
+  const file = $('g-file').files[0];
+  if (!file) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Uploading…';
+  try {
+    const blob = await compressImage(file);
+    const safeName = `${Date.now()}_${file.name.replace(/[^\w.\-]/g, '_')}`;
+    const url = await uploadToCloudinary(blob, safeName);
+    await fb.addDoc(fb.collection(db, 'gallery'), {
+      url,
+      label: $('g-label').value.trim(),
+      name: $('g-name').value.trim(),
+      createdAt: fb.serverTimestamp()
+    });
+    showMsg(msg, '✓ Photo added to the gallery.', true);
+    e.target.reset();
+    loadGallery();
+  } catch (err) {
+    showMsg(msg, 'Upload failed: ' + err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Upload Photo';
+  }
+});
+
+async function deleteGallery(id) {
+  if (!confirm('Remove this photo from the site?')) return;
+  try {
+    await fb.deleteDoc(fb.doc(db, 'gallery', id));
+    loadGallery();
+  } catch (err) {
+    alert('Delete failed: ' + err.message);
+  }
+}
+
+// ═══════════ REVIEWS CRUD ═══════════
+async function loadReviews() {
+  const list = $('r-list');
+  try {
+    const q = fb.query(fb.collection(db, 'reviews'), fb.orderBy('createdAt', 'desc'));
+    const snap = await fb.getDocs(q);
+    if (snap.empty) { list.innerHTML = '<div class="empty">No reviews yet — add your first above.</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const el = document.createElement('div');
+      el.className = 'r-item';
+      el.innerHTML = `
+        <div>
+          <div class="r-stars">${'★'.repeat(d.rating || 5)}</div>
+          <div class="r-quote">${escapeHtml(d.quote || '')}</div>
+          <div class="r-author">${escapeHtml(d.author || '')} · Google Review</div>
+        </div>
+        <button class="btn btn-danger" title="Delete">✕</button>`;
+      el.querySelector('.btn-danger').addEventListener('click', () => deleteReview(docSnap.id));
+      list.appendChild(el);
+    });
+  } catch (err) {
+    list.innerHTML = `<div class="empty">Could not load reviews: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+$('review-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('r-submit'), msg = $('r-msg');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+  try {
+    await fb.addDoc(fb.collection(db, 'reviews'), {
+      rating: parseInt($('r-rating').value, 10) || 5,
+      quote: $('r-quote').value.trim(),
+      author: $('r-author').value.trim(),
+      createdAt: fb.serverTimestamp()
+    });
+    showMsg(msg, '✓ Review added.', true);
+    e.target.reset();
+    $('r-rating').value = 5; paintStars(5);
+    loadReviews();
+  } catch (err) {
+    showMsg(msg, 'Save failed: ' + err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add Review';
+  }
+});
+
+async function deleteReview(id) {
+  if (!confirm('Delete this review?')) return;
+  try {
+    await fb.deleteDoc(fb.doc(db, 'reviews', id));
+    loadReviews();
+  } catch (err) {
+    alert('Delete failed: ' + err.message);
+  }
+}
+
+// ═══════════ UTIL ═══════════
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+</script>
+</body>
+</html>
