@@ -1471,7 +1471,7 @@ window.initTestiCarousel = function(){
   <div class="section-tag">Ready to book</div>
   <h2 class="section-h2">Reserve Your<br>Detail.</h2>
   <div class="booking-inner">
-    <form class="booking-form reveal" onsubmit="sendToWhatsApp(event);">
+    <form class="booking-form reveal" id="booking-form">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">First name</label>
@@ -1685,74 +1685,9 @@ window.initTestiCarousel = function(){
   });
 
   // ── WHATSAPP BOOKING ──
-  // ⚠ IMPORTANT: Replace the number below with your real WhatsApp business number
-  // Format: country code + number, no spaces, no dashes, no +
-  // Canada example: 15195550000 (1 = Canada country code, then your 10-digit number)
-  const WHATSAPP_NUMBER = '15483915549'; // 👈 REPLACE THIS WITH YOUR NUMBER
-
-  function sendToWhatsApp(e) {
-    e.preventDefault();
-
-    // Collect all form fields
-    const firstName = document.getElementById('bk-firstname').value.trim();
-    const lastName  = document.getElementById('bk-lastname').value.trim();
-    const email     = document.getElementById('bk-email').value.trim();
-    const phone     = document.getElementById('bk-phone').value.trim();
-    const car       = document.getElementById('bk-car').value.trim();
-    const pkg       = document.getElementById('bk-package').value.trim();
-    const date      = document.getElementById('bk-date').value;
-    const notes     = document.getElementById('bk-notes').value.trim();
-
-    // Collect checked addons
-    const addonBoxes  = document.querySelectorAll('.addon-cb:checked');
-    const addons      = Array.from(addonBoxes).map(function(cb){ return cb.value; });
-    const addonsText  = addons.length > 0 ? addons.join(', ') : 'None';
-
-    // Validate required fields
-    if (!firstName || !lastName || !email || !phone || !car || !pkg || !date) {
-      alert('Please fill in all required fields before submitting.');
-      return;
-    }
-
-    // Format date nicely
-    const dateFormatted = date
-      ? new Date(date + 'T12:00:00').toLocaleDateString('en-CA', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        })
-      : 'Not specified';
-
-    // Build the WhatsApp message
-    const message =
-`🚗 *NEW BOOKING REQUEST — DetailX Labs*
-
-*━━━━━━━━━━━━━━━━━━━━━━*
-👤 *CLIENT DETAILS*
-• Name: ${firstName} ${lastName}
-• Email: ${email}
-• Phone: ${phone}
-
-*━━━━━━━━━━━━━━━━━━━━━━*
-🧽 *SERVICE REQUESTED*
-• Package: ${pkg}
-• Car: ${car}
-• Date: ${dateFormatted}
-
-*━━━━━━━━━━━━━━━━━━━━━━*
-✨ *ADD-ON SERVICES*
-${addonsText}
-
-*━━━━━━━━━━━━━━━━━━━━━━*
-📍 *LOCATION / NOTES*
-${notes || 'No additional notes provided.'}
-
-*━━━━━━━━━━━━━━━━━━━━━━*
-_Sent from DetailX Labs website_`;
-
-    // Encode and open WhatsApp
-    const encoded = encodeURIComponent(message);
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
-    window.open(url, '_blank');
-  }
+  // The booking submit handler now lives in the Firebase module script
+  // near the bottom of this file (it needs Firestore to reserve a serial
+  // number and save the booking before opening WhatsApp).
 </script>
 
 <!-- ═══════════════════ FIREBASE: dynamic gallery + reviews ═══════════════════ -->
@@ -1825,6 +1760,174 @@ async function boot(){
 }
 
 boot();
+</script>
+
+<!-- ═══════════════════ BOOKING: serial + Firestore save + WhatsApp ═══════════════════ -->
+<script type="module">
+import { firebaseConfig, FIREBASE_ENABLED, FB_BASE, PRICING, BUSINESS } from './firebase-config.js';
+
+// Business WhatsApp number (country code + number, no +, no spaces).
+const WHATSAPP_NUMBER = '15483915549';
+
+const form = document.getElementById('booking-form');
+if (form) {
+  let db = null, fb = null, fbReady = null;
+
+  // Lazily initialise Firestore only when needed.
+  async function getDb() {
+    if (db) return db;
+    if (!fbReady) {
+      fbReady = (async () => {
+        const { initializeApp } = await import(`${FB_BASE}/firebase-app.js`);
+        const fsMod = await import(`${FB_BASE}/firebase-firestore.js`);
+        const app = initializeApp(firebaseConfig);
+        db = fsMod.getFirestore(app);
+        fb = fsMod;
+      })();
+    }
+    await fbReady;
+    return db;
+  }
+
+  const pad4 = (n) => String(n).padStart(4, '0');
+  const formatSerial = (n) => 'DXL-' + pad4(n);
+
+  // Reserve the next sequential serial atomically via a counter document.
+  async function reserveSerialNumber() {
+    await getDb();
+    const ref = fb.doc(db, 'counters', 'bookings');
+    return fb.runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      const current = (snap.exists() && snap.data().current) ? snap.data().current : 0;
+      const next = current + 1;
+      tx.set(ref, { current: next, updatedAt: fb.serverTimestamp() }, { merge: true });
+      return next;
+    });
+  }
+
+  function pkgPrice(pkg) {
+    if (PRICING.packages[pkg] != null) return PRICING.packages[pkg];
+    const m = pkg.match(/\$(\d+(?:\.\d+)?)/); // fallback: parse "$120" from the label
+    return m ? parseFloat(m[1]) : 0;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('.form-submit');
+
+    const firstName = document.getElementById('bk-firstname').value.trim();
+    const lastName  = document.getElementById('bk-lastname').value.trim();
+    const email     = document.getElementById('bk-email').value.trim();
+    const phone     = document.getElementById('bk-phone').value.trim();
+    const car       = document.getElementById('bk-car').value.trim();
+    const pkg       = document.getElementById('bk-package').value.trim();
+    const date      = document.getElementById('bk-date').value;
+    const notes     = document.getElementById('bk-notes').value.trim();
+
+    const addonNames = Array.from(document.querySelectorAll('.addon-cb:checked')).map(cb => cb.value);
+
+    if (!firstName || !lastName || !email || !phone || !car || !pkg || !date) {
+      alert('Please fill in all required fields before submitting.');
+      return;
+    }
+
+    // Build itemized pricing.
+    const packagePrice = pkgPrice(pkg);
+    const addons = addonNames.map(name => ({ name, price: PRICING.addons[name] || 0 }));
+    const subtotal = packagePrice + addons.reduce((s, a) => s + a.price, 0);
+    const tax = Math.round(subtotal * (PRICING.taxRate || 0) * 100) / 100;
+    const total = subtotal + tax;
+
+    const dateFormatted = new Date(date + 'T12:00:00').toLocaleDateString('en-CA', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // Reserve serial + save booking to Firestore.
+    const origLabel = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+    let serial = '', serialNum = null, saved = false;
+
+    if (FIREBASE_ENABLED) {
+      await getDb();
+
+      // 1) Try to reserve a sequential serial. If the counter write is blocked,
+      //    fall back to a timestamp-based serial so the booking can still save.
+      try {
+        serialNum = await reserveSerialNumber();
+        serial = formatSerial(serialNum);
+      } catch (err) {
+        console.warn('Serial counter unavailable, using fallback serial:', err);
+        serial = 'DXL-' + Date.now().toString().slice(-6);
+      }
+
+      // 2) Save the booking itself. This is the important write — surface failures.
+      try {
+        await fb.addDoc(fb.collection(db, 'bookings'), {
+          serial, serialNum,
+          firstName, lastName, email, phone, car,
+          packageName: pkg, packagePrice,
+          addons, addonsText: addons.length ? addons.map(a => a.name).join(', ') : 'None',
+          notes: notes || '',
+          preferredDate: date, preferredDateText: dateFormatted,
+          subtotal, tax, taxRate: PRICING.taxRate || 0, total,
+          currency: PRICING.currency || 'CAD',
+          status: 'new',
+          createdAt: fb.serverTimestamp()
+        });
+        saved = true;
+      } catch (err) {
+        console.error('Booking save to Firestore failed:', err);
+        const permission = /permission|insufficient/i.test(err.message || '');
+        alert(
+          'Could not save your booking to the database' +
+          (permission ? ' (the site is not yet allowed to write bookings).' : ':\n' + err.message) +
+          '\n\nWe\'ll still send your request via WhatsApp so nothing is lost.'
+        );
+        serial = ''; // don't show an unsaved serial to the customer
+      }
+    }
+    if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+
+    const addonsText = addons.length ? addons.map(a => `${a.name} — $${a.price}`).join('\n') : 'None';
+    const serialLine = serial ? `🔖 *Booking #:* ${serial}\n` : '';
+
+    const message =
+`🚗 *NEW BOOKING REQUEST — ${BUSINESS.name}*
+${serialLine}
+*━━━━━━━━━━━━━━━━━━━━━━*
+👤 *CLIENT DETAILS*
+• Name: ${firstName} ${lastName}
+• Email: ${email}
+• Phone: ${phone}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+🧽 *SERVICE REQUESTED*
+• Package: ${pkg}
+• Car: ${car}
+• Date: ${dateFormatted}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+✨ *ADD-ON SERVICES*
+${addonsText}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+💰 *ESTIMATED TOTAL:* $${total.toFixed(2)} ${PRICING.currency || 'CAD'}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+📍 *LOCATION / NOTES*
+${notes || 'No additional notes provided.'}
+
+*━━━━━━━━━━━━━━━━━━━━━━*
+_Sent from ${BUSINESS.name} website_`;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+
+    if (saved && serial) {
+      alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will open so you can send the request to us.`);
+    }
+  });
+}
 </script>
 </body>
 </html>

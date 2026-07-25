@@ -130,6 +130,47 @@
   .r-item .r-author { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
   .empty { color:var(--subtle); font-size:13px; font-style:italic; padding:1rem 0; }
 
+  /* ── Bookings ── */
+  .bk-item { border:1px solid var(--border); border-radius:4px; padding:1.1rem 1.25rem; margin-bottom:0.85rem; background:var(--dark); }
+  .bk-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
+  .bk-serial { font-family:'DM Mono',monospace; font-size:13px; letter-spacing:0.08em; color:var(--amber); font-weight:500; }
+  .bk-status { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:2px; border:1px solid var(--border-strong); color:var(--muted); }
+  .bk-status.new { color:var(--amber); border-color:rgba(46,232,0,0.4); }
+  .bk-name { font-size:15px; margin:0.15rem 0; }
+  .bk-meta { font-size:12.5px; color:var(--muted); line-height:1.7; }
+  .bk-meta b { color:var(--white); font-weight:400; }
+  .bk-total { font-family:'DM Mono',monospace; font-size:15px; color:var(--white); }
+  .bk-actions { display:flex; gap:0.5rem; margin-top:0.9rem; flex-wrap:wrap; }
+  .btn-sm { padding:0.5rem 0.85rem; font-size:10px; }
+
+  /* ── Invoice modal ── */
+  #inv-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:60; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  #inv-overlay.show { display:flex; }
+  #inv-modal { background:var(--card); border:1px solid var(--border-strong); border-radius:6px; padding:1.75rem; width:100%; max-width:620px; }
+  #inv-modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; }
+  #inv-actions { display:flex; gap:0.75rem; margin-top:1.5rem; }
+  /* Rendered invoice — light "paper" look so preview matches the PDF */
+  .inv-paper { background:#ffffff; color:#111; border-radius:4px; padding:1.75rem; font-family:'DM Sans',sans-serif; }
+  .inv-paper .ip-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #111; padding-bottom:0.9rem; margin-bottom:1.1rem; }
+  .inv-paper .ip-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:0.03em; }
+  .inv-paper .ip-brand span { color:#1a9e00; }
+  .inv-paper .ip-sub { font-size:11px; color:#555; }
+  .inv-paper .ip-right { text-align:right; font-size:11px; color:#333; line-height:1.6; }
+  .inv-paper .ip-title { font-family:'DM Mono',monospace; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; color:#111; }
+  .inv-paper .ip-serial { font-family:'DM Mono',monospace; font-size:12px; color:#1a9e00; }
+  .inv-paper .ip-cols { display:flex; justify-content:space-between; gap:1.5rem; margin:1rem 0 1.25rem; font-size:12.5px; line-height:1.7; }
+  .inv-paper .ip-cols h4 { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#888; margin-bottom:0.35rem; }
+  .inv-paper table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:1rem; }
+  .inv-paper th { text-align:left; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#888; border-bottom:1px solid #ddd; padding:0.5rem 0; }
+  .inv-paper th.num, .inv-paper td.num { text-align:right; }
+  .inv-paper td { padding:0.5rem 0; border-bottom:1px solid #eee; }
+  .inv-paper .ip-tot { width:100%; font-size:13px; }
+  .inv-paper .ip-tot td { border:none; padding:0.28rem 0; }
+  .inv-paper .ip-tot .lbl { text-align:right; color:#555; }
+  .inv-paper .ip-tot .val { text-align:right; width:110px; }
+  .inv-paper .ip-tot .grand td { border-top:2px solid #111; font-size:16px; font-weight:500; padding-top:0.6rem; }
+  .inv-paper .ip-foot { margin-top:1.25rem; font-size:11px; color:#777; text-align:center; }
+
   /* ── Login screen ── */
   #login-screen {
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
@@ -207,6 +248,7 @@
     <div class="tabs">
       <button class="tab active" data-panel="gallery">Gallery Images</button>
       <button class="tab" data-panel="reviews">Google Reviews</button>
+      <button class="tab" data-panel="bookings">Bookings</button>
     </div>
 
     <!-- ── GALLERY PANEL ── -->
@@ -266,12 +308,52 @@
       <div class="list-title">Current reviews</div>
       <div id="r-list"><div class="empty">Loading…</div></div>
     </div>
+
+    <!-- ── BOOKINGS PANEL ── -->
+    <div class="panel" id="panel-bookings">
+      <div class="card">
+        <div class="card-title">Find a booking</div>
+        <div class="form-row" style="grid-template-columns:1fr auto; align-items:end;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Search by serial no. / name / phone / car</label>
+            <input class="form-input" id="bk-search" type="text" placeholder="e.g. DXL-0001">
+          </div>
+          <button class="btn btn-ghost" id="bk-refresh" type="button" style="height:fit-content;">Refresh</button>
+        </div>
+      </div>
+
+      <div class="list-title" id="bk-count">Bookings</div>
+      <div id="bk-list"><div class="empty">Loading…</div></div>
+    </div>
   </div>
 </div>
 
+<!-- ══════════════ INVOICE PREVIEW MODAL ══════════════ -->
+<div id="inv-overlay">
+  <div id="inv-modal">
+    <div id="inv-modal-head">
+      <div class="card-title" style="margin:0;">Invoice preview — verify before sending</div>
+      <button class="btn btn-danger" id="inv-close" type="button" style="padding:0.35rem 0.6rem;">✕</button>
+    </div>
+    <div id="inv-preview"><!-- rendered invoice --></div>
+    <div id="inv-actions">
+      <button class="btn btn-ghost" id="inv-pdf" type="button">Download PDF</button>
+      <button class="btn btn-primary" id="inv-wa" type="button">Send to WhatsApp</button>
+    </div>
+    <p class="hint" style="margin-top:0.75rem; line-height:1.5;">
+      WhatsApp links can only pre-fill a text message, not attach a file. “Send to WhatsApp”
+      downloads the PDF and opens a chat to the customer with the itemized invoice text —
+      attach the downloaded PDF in WhatsApp before sending.
+    </p>
+  </div>
+</div>
+
+<!-- jsPDF for invoice generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <!-- ══════════════ FIREBASE LOGIC ══════════════ -->
 <script type="module">
-import { firebaseConfig, FIREBASE_ENABLED, FB_BASE, cloudinaryConfig, CLOUDINARY_ENABLED } from './firebase-config.js';
+import { firebaseConfig, FIREBASE_ENABLED, FB_BASE, cloudinaryConfig, CLOUDINARY_ENABLED, PRICING, BUSINESS } from './firebase-config.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -329,6 +411,7 @@ if (FIREBASE_ENABLED) {
         $('current-user').textContent = user.email;
         loadGallery();
         loadReviews();
+        loadBookings();
       } else {
         $('login-screen').style.display = 'flex';
         $('app').style.display = 'none';
@@ -539,6 +622,291 @@ async function deleteReview(id) {
     alert('Delete failed: ' + err.message);
   }
 }
+
+// ═══════════ BOOKINGS ═══════════
+let ALL_BOOKINGS = [];     // cached {id, ...data}
+let CURRENT_INVOICE = null; // booking currently shown in the modal
+
+const CURRENCY = (PRICING && PRICING.currency) || 'CAD';
+const money = (n) => '$' + (Number(n) || 0).toFixed(2);
+
+async function loadBookings() {
+  const list = $('bk-list');
+  try {
+    let snap;
+    try {
+      snap = await fb.getDocs(fb.query(fb.collection(db, 'bookings'), fb.orderBy('createdAt', 'desc')));
+    } catch (e) {
+      // Falls back to unordered fetch if the createdAt index/field is missing.
+      snap = await fb.getDocs(fb.collection(db, 'bookings'));
+    }
+    ALL_BOOKINGS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Newest first even on the fallback path.
+    ALL_BOOKINGS.sort((a, b) => (b.serialNum || 0) - (a.serialNum || 0));
+    renderBookings();
+  } catch (err) {
+    list.innerHTML = `<div class="empty">Could not load bookings: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderBookings() {
+  const list = $('bk-list');
+  const term = ($('bk-search').value || '').trim().toLowerCase();
+  const rows = ALL_BOOKINGS.filter(b => {
+    if (!term) return true;
+    return [b.serial, b.firstName, b.lastName, b.phone, b.email, b.car, b.packageName]
+      .filter(Boolean).join(' ').toLowerCase().includes(term);
+  });
+
+  $('bk-count').textContent = term
+    ? `${rows.length} match${rows.length === 1 ? '' : 'es'} for “${term}”`
+    : `All bookings (${ALL_BOOKINGS.length})`;
+
+  if (!rows.length) {
+    list.innerHTML = `<div class="empty">${ALL_BOOKINGS.length ? 'No bookings match your search.' : 'No bookings yet.'}</div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  rows.forEach(b => {
+    const total = (b.total != null) ? b.total : computeTotal(b);
+    const dateText = b.preferredDateText || b.preferredDate || '—';
+    const addonText = (b.addons && b.addons.length) ? b.addons.map(a => a.name).join(', ') : 'None';
+    const el = document.createElement('div');
+    el.className = 'bk-item';
+    el.innerHTML = `
+      <div class="bk-top">
+        <div>
+          <div class="bk-serial">${escapeHtml(b.serial || '(no serial)')}</div>
+          <div class="bk-name">${escapeHtml((b.firstName || '') + ' ' + (b.lastName || ''))}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="bk-status ${b.status === 'new' ? 'new' : ''}">${escapeHtml(b.status || 'new')}</span>
+          <div class="bk-total" style="margin-top:0.4rem;">${money(total)}</div>
+        </div>
+      </div>
+      <div class="bk-meta">
+        <b>${escapeHtml(b.packageName || '')}</b> · ${escapeHtml(b.car || '')}<br>
+        📅 ${escapeHtml(dateText)} &nbsp;•&nbsp; ✨ ${escapeHtml(addonText)}<br>
+        📞 ${escapeHtml(b.phone || '')} &nbsp;•&nbsp; ✉ ${escapeHtml(b.email || '')}
+        ${b.notes ? '<br>📍 ' + escapeHtml(b.notes) : ''}
+      </div>
+      <div class="bk-actions">
+        <button class="btn btn-primary btn-sm act-invoice" type="button">Generate Invoice</button>
+        <a class="btn btn-ghost btn-sm" href="https://wa.me/${cleanPhone(b.phone)}" target="_blank">Message customer</a>
+        <button class="btn btn-danger btn-sm act-del" type="button">Delete</button>
+      </div>`;
+    el.querySelector('.act-invoice').addEventListener('click', () => openInvoice(b));
+    el.querySelector('.act-del').addEventListener('click', () => deleteBooking(b.id));
+    list.appendChild(el);
+  });
+}
+
+$('bk-search').addEventListener('input', renderBookings);
+$('bk-refresh').addEventListener('click', loadBookings);
+
+async function deleteBooking(id) {
+  if (!confirm('Delete this booking permanently?')) return;
+  try {
+    await fb.deleteDoc(fb.doc(db, 'bookings', id));
+    loadBookings();
+  } catch (err) {
+    alert('Delete failed: ' + err.message);
+  }
+}
+
+// Digits-only phone for wa.me links.
+function cleanPhone(p) {
+  const digits = String(p || '').replace(/\D/g, '');
+  // Assume Canada/US if a bare 10-digit number was entered.
+  return digits.length === 10 ? '1' + digits : digits;
+}
+
+// Recompute a total if an older booking doc didn't store one.
+function computeTotal(b) {
+  const pkg = b.packagePrice != null ? b.packagePrice : (PRICING.packages[b.packageName] || 0);
+  const add = (b.addons || []).reduce((s, a) => s + (a.price || PRICING.addons[a.name] || 0), 0);
+  const subtotal = pkg + add;
+  const tax = Math.round(subtotal * (b.taxRate != null ? b.taxRate : (PRICING.taxRate || 0)) * 100) / 100;
+  return subtotal + tax;
+}
+
+// ═══════════ INVOICE ═══════════
+function invoiceModel(b) {
+  const packagePrice = b.packagePrice != null ? b.packagePrice : (PRICING.packages[b.packageName] || 0);
+  const addons = (b.addons || []).map(a => ({ name: a.name, price: a.price != null ? a.price : (PRICING.addons[a.name] || 0) }));
+  const subtotal = b.subtotal != null ? b.subtotal : packagePrice + addons.reduce((s, a) => s + a.price, 0);
+  const taxRate = b.taxRate != null ? b.taxRate : (PRICING.taxRate || 0);
+  const tax = b.tax != null ? b.tax : Math.round(subtotal * taxRate * 100) / 100;
+  const total = b.total != null ? b.total : subtotal + tax;
+  const invNo = 'INV-' + (b.serial ? b.serial.replace(/^DXL-/, '') : (b.id || '').slice(0, 6).toUpperCase());
+  const issued = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+  return { b, packagePrice, addons, subtotal, taxRate, tax, total, invNo, issued };
+}
+
+function openInvoice(b) {
+  CURRENT_INVOICE = invoiceModel(b);
+  const m = CURRENT_INVOICE;
+  const rows = [`<tr><td>${escapeHtml(b.packageName || 'Detailing package')}</td><td class="num">${money(m.packagePrice)}</td></tr>`]
+    .concat(m.addons.map(a => `<tr><td>${escapeHtml(a.name)}</td><td class="num">${money(a.price)}</td></tr>`))
+    .join('');
+  const taxRow = m.taxRate ? `<tr><td class="lbl">Tax (${(m.taxRate * 100).toFixed(0)}%)</td><td class="val">${money(m.tax)}</td></tr>` : '';
+  $('inv-preview').innerHTML = `
+    <div class="inv-paper" id="inv-paper">
+      <div class="ip-head">
+        <div>
+          <div class="ip-brand">Detail<span>X</span> Labs</div>
+          <div class="ip-sub">${escapeHtml(BUSINESS.tagline || '')}</div>
+        </div>
+        <div class="ip-right">
+          <div class="ip-title">Invoice</div>
+          <div class="ip-serial">${escapeHtml(m.invNo)}</div>
+          <div>Booking ${escapeHtml(b.serial || '')}</div>
+          <div>${escapeHtml(m.issued)}</div>
+        </div>
+      </div>
+      <div class="ip-cols">
+        <div>
+          <h4>Billed to</h4>
+          ${escapeHtml((b.firstName || '') + ' ' + (b.lastName || ''))}<br>
+          ${escapeHtml(b.phone || '')}<br>
+          ${escapeHtml(b.email || '')}<br>
+          ${escapeHtml(b.car || '')}
+        </div>
+        <div>
+          <h4>From</h4>
+          ${escapeHtml(BUSINESS.name)}<br>
+          ${escapeHtml(BUSINESS.location)}<br>
+          ${escapeHtml(BUSINESS.phone)}<br>
+          ${escapeHtml(BUSINESS.email)}
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Service</th><th class="num">Amount</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <table class="ip-tot">
+        <tr><td class="lbl">Subtotal</td><td class="val">${money(m.subtotal)}</td></tr>
+        ${taxRow}
+        <tr class="grand"><td class="lbl">Total (${CURRENCY})</td><td class="val">${money(m.total)}</td></tr>
+      </table>
+      <div class="ip-foot">
+        Scheduled: ${escapeHtml(b.preferredDateText || b.preferredDate || '—')} · Thank you for choosing ${escapeHtml(BUSINESS.name)}!
+      </div>
+    </div>`;
+  $('inv-overlay').classList.add('show');
+}
+
+$('inv-close').addEventListener('click', () => $('inv-overlay').classList.remove('show'));
+$('inv-overlay').addEventListener('click', (e) => { if (e.target === $('inv-overlay')) $('inv-overlay').classList.remove('show'); });
+
+// Build the PDF with jsPDF and return the jsPDF instance.
+function buildInvoicePdf() {
+  const m = CURRENT_INVOICE, b = m.b;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const L = 48, R = 547; let y = 60;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(17);
+  doc.text('DetailX Labs', L, y);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90);
+  doc.text(BUSINESS.tagline || '', L, y + 15);
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(17);
+  doc.text('INVOICE', R, y, { align: 'right' });
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60);
+  doc.text(m.invNo, R, y + 15, { align: 'right' });
+  doc.text('Booking ' + (b.serial || ''), R, y + 28, { align: 'right' });
+  doc.text(m.issued, R, y + 41, { align: 'right' });
+
+  y += 60; doc.setDrawColor(17); doc.setLineWidth(1.2); doc.line(L, y, R, y); y += 26;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(130);
+  doc.text('BILLED TO', L, y); doc.text('FROM', 320, y);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(40);
+  const billed = [ (b.firstName || '') + ' ' + (b.lastName || ''), b.phone || '', b.email || '', b.car || '' ];
+  const from = [ BUSINESS.name, BUSINESS.location, BUSINESS.phone, BUSINESS.email ];
+  billed.forEach((t, i) => doc.text(String(t), L, y + 16 + i * 14));
+  from.forEach((t, i) => doc.text(String(t), 320, y + 16 + i * 14));
+  y += 16 + 4 * 14 + 16;
+
+  // Line items table
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(130);
+  doc.text('SERVICE', L, y); doc.text('AMOUNT', R, y, { align: 'right' });
+  y += 8; doc.setDrawColor(220); doc.setLineWidth(0.7); doc.line(L, y, R, y); y += 16;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(40);
+  const items = [{ name: b.packageName || 'Detailing package', price: m.packagePrice }].concat(m.addons);
+  items.forEach(it => {
+    doc.text(String(it.name), L, y);
+    doc.text(money(it.price), R, y, { align: 'right' });
+    y += 14; doc.setDrawColor(238); doc.line(L, y - 4, R, y - 4);
+  });
+
+  y += 14;
+  const totX = 430;
+  doc.setTextColor(90);
+  doc.text('Subtotal', totX, y, { align: 'right' }); doc.text(money(m.subtotal), R, y, { align: 'right' }); y += 16;
+  if (m.taxRate) { doc.text('Tax (' + (m.taxRate * 100).toFixed(0) + '%)', totX, y, { align: 'right' }); doc.text(money(m.tax), R, y, { align: 'right' }); y += 16; }
+  doc.setDrawColor(17); doc.setLineWidth(1.2); doc.line(totX - 30, y, R, y); y += 18;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(17);
+  doc.text('Total (' + CURRENCY + ')', totX, y, { align: 'right' });
+  doc.text(money(m.total), R, y, { align: 'right' });
+
+  y += 40; doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(120);
+  doc.text('Scheduled: ' + (b.preferredDateText || b.preferredDate || '—'), L, y);
+  doc.text('Thank you for choosing ' + BUSINESS.name + '!', L, y + 14);
+  return doc;
+}
+
+function invoiceFilename() {
+  return `Invoice_${CURRENT_INVOICE.b.serial || CURRENT_INVOICE.invNo}.pdf`;
+}
+
+$('inv-pdf').addEventListener('click', () => {
+  if (!CURRENT_INVOICE) return;
+  try { buildInvoicePdf().save(invoiceFilename()); }
+  catch (err) { alert('Could not build PDF: ' + err.message); }
+});
+
+$('inv-wa').addEventListener('click', async () => {
+  if (!CURRENT_INVOICE) return;
+  const m = CURRENT_INVOICE, b = m.b;
+  // 1) Download the PDF so the admin can attach it in WhatsApp.
+  try { buildInvoicePdf().save(invoiceFilename()); }
+  catch (err) { alert('Could not build PDF: ' + err.message); return; }
+
+  // 2) Build itemized text invoice.
+  const lines = [`• ${b.packageName || 'Detailing package'} — ${money(m.packagePrice)}`]
+    .concat(m.addons.map(a => `• ${a.name} — ${money(a.price)}`));
+  const taxLine = m.taxRate ? `Tax (${(m.taxRate * 100).toFixed(0)}%): ${money(m.tax)}\n` : '';
+  const msg =
+`🧾 *INVOICE ${m.invNo} — ${BUSINESS.name}*
+Booking: ${b.serial || ''}
+Date: ${m.issued}
+
+Hi ${b.firstName || ''}, here is your invoice:
+
+${lines.join('\n')}
+
+Subtotal: ${money(m.subtotal)}
+${taxLine}*TOTAL: ${money(m.total)} ${CURRENCY}*
+
+Vehicle: ${b.car || ''}
+Scheduled: ${b.preferredDateText || b.preferredDate || '—'}
+
+_The PDF invoice has just been downloaded — please attach it to this chat._
+Thank you for choosing ${BUSINESS.name}!`;
+
+  const url = `https://wa.me/${cleanPhone(b.phone)}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  // 3) Mark the booking as invoiced (best-effort).
+  try {
+    await fb.updateDoc(fb.doc(db, 'bookings', b.id), { status: 'invoiced', invoicedAt: fb.serverTimestamp() });
+    b.status = 'invoiced';
+    renderBookings();
+  } catch (e) { /* non-fatal */ }
+});
 
 // ═══════════ UTIL ═══════════
 function escapeHtml(str) {

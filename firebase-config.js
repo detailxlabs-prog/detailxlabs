@@ -41,3 +41,39 @@ export const cloudinaryConfig = {
 };
 
 export const CLOUDINARY_ENABLED = !cloudinaryConfig.cloudName.startsWith("YOUR_");
+
+// ═══════════════════════════════════════════════════════════════
+//  Pricing + business details — shared by the booking form
+//  (index.html) and the invoice generator (admin.html). Keep the
+//  keys here identical to the option text / checkbox values used
+//  in the booking form so totals compute correctly.
+// ═══════════════════════════════════════════════════════════════
+export const PRICING = {
+  // Package option text (exactly as shown in the booking <select>) → price
+  packages: {
+    "Premium Interior Detail — $120": 120,
+    "Premium Exterior Detail — $80": 80
+  },
+  // Add-on checkbox value → price
+  addons: {
+    "Steam Cleaning": 20,
+    "Engine Bay Detail": 30,
+    "Seat Extraction": 30,
+    "Pet Hair Removal": 40,
+    "Bio / Biohazard Clean": 50,
+    "Odor Removal": 50
+  },
+  // Optional tax rate (0 = no tax). Ontario HST would be 0.13.
+  taxRate: 0,
+  currency: "CAD"
+};
+
+// Business details printed on invoices.
+export const BUSINESS = {
+  name: "DetailX Labs",
+  tagline: "Premium Mobile Auto Detailing",
+  location: "London, ON",
+  phone: "+1 548 391 5549",
+  email: "detailxlabs@gmail.com",
+  website: "detailxlabs.ca"
+};
