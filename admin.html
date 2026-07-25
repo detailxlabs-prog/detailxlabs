@@ -171,46 +171,46 @@
   .inv-paper .ip-tot .grand td { border-top:2px solid #111; font-size:16px; font-weight:500; padding-top:0.6rem; }
   .inv-paper .ip-foot { margin-top:1.25rem; font-size:11px; color:#777; text-align:center; }
 
-  /* ===== Branded invoice (DetailX Labs) ===== */
+  /* ===== Branded invoice (DetailX Labs) — compact, single page ===== */
   .nv-paper{--ink:#14181f;--muted:#6b7280;--line:#e6e8ec;--accent:#34a824;--accent-soft:#eefbe9;--accent-brd:#cdeeb9;
-    background:#fff;color:var(--ink);width:720px;max-width:100%;padding:44px 48px 38px;
-    font-family:'DM Sans',Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;border-radius:4px;}
+    background:#fff;color:var(--ink);width:760px;max-width:100%;padding:30px 38px 26px;
+    font-family:'DM Sans',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.45;border-radius:4px;}
   .nv-top{display:flex;justify-content:space-between;align-items:flex-start;}
-  .nv-logo{height:68px;width:auto;display:block;}
-  .nv-company{text-align:right;font-size:10.5px;color:var(--muted);line-height:1.65;}
-  .nv-title{font-size:29px;font-weight:700;letter-spacing:3px;margin-top:30px;}
-  .nv-rule{height:3px;width:54px;background:var(--accent);border-radius:2px;margin-top:8px;}
-  .nv-meta{display:flex;justify-content:space-between;margin-top:26px;gap:28px;}
-  .nv-label{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:7px;}
-  .nv-name{font-size:13px;font-weight:700;margin-bottom:3px;}
-  .nv-addr{font-size:11.5px;color:#3f4650;line-height:1.6;}
-  .nv-details{min-width:250px;}
-  .nv-drow{display:flex;justify-content:space-between;padding:5px 0;font-size:11.5px;}
+  .nv-logo{height:50px;width:auto;display:block;}
+  .nv-company{text-align:right;font-size:9.5px;color:var(--muted);line-height:1.55;}
+  .nv-title{font-size:22px;font-weight:700;letter-spacing:2.5px;margin-top:18px;}
+  .nv-rule{height:2.5px;width:46px;background:var(--accent);border-radius:2px;margin-top:6px;}
+  .nv-meta{display:flex;justify-content:space-between;margin-top:18px;gap:24px;}
+  .nv-label{font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;}
+  .nv-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+  .nv-addr{font-size:10.5px;color:#3f4650;line-height:1.5;}
+  .nv-details{min-width:230px;}
+  .nv-drow{display:flex;justify-content:space-between;padding:3px 0;font-size:10.5px;}
   .nv-drow .k{color:var(--muted);} .nv-drow .v{font-weight:600;}
-  .nv-due{margin-top:14px;background:var(--accent-soft);border:1px solid var(--accent-brd);border-radius:10px;
-    padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
-  .nv-due .k{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);font-weight:700;}
-  .nv-due .v{font-size:20px;font-weight:700;color:var(--accent);}
-  .nv-paper table.nv-items{width:100%;border-collapse:collapse;margin-top:30px;}
-  .nv-items thead th{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:600;
-    text-align:right;padding:0 0 10px;border-bottom:2px solid var(--ink);}
+  .nv-due{margin-top:10px;background:var(--accent-soft);border:1px solid var(--accent-brd);border-radius:8px;
+    padding:9px 13px;display:flex;justify-content:space-between;align-items:center;}
+  .nv-due .k{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);font-weight:700;}
+  .nv-due .v{font-size:16px;font-weight:700;color:var(--accent);}
+  .nv-paper table.nv-items{width:100%;border-collapse:collapse;margin-top:20px;}
+  .nv-items thead th{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;
+    text-align:right;padding:0 0 7px;border-bottom:2px solid var(--ink);}
   .nv-items thead th.left{text-align:left;}
-  .nv-items tbody td{padding:13px 0;border-bottom:1px solid var(--line);text-align:right;vertical-align:top;}
+  .nv-items tbody td{padding:8px 0;border-bottom:1px solid var(--line);text-align:right;vertical-align:top;font-size:10.5px;}
   .nv-items tbody td.left{text-align:left;}
-  .nv-iname{font-size:12.5px;font-weight:600;}
-  .nv-totals{display:flex;justify-content:flex-end;margin-top:18px;}
-  .nv-totals-in{width:280px;}
-  .nv-trow{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;}
+  .nv-iname{font-size:11px;font-weight:600;}
+  .nv-totals{display:flex;justify-content:flex-end;margin-top:12px;}
+  .nv-totals-in{width:260px;}
+  .nv-trow{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;}
   .nv-trow .k{color:var(--muted);}
-  .nv-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:12px;border-top:2px solid var(--ink);font-size:15px;font-weight:700;}
-  .nv-note{margin-top:20px;font-size:11px;color:#3f4650;background:#f5f6f8;border-radius:8px;padding:11px 14px;
+  .nv-total{display:flex;justify-content:space-between;margin-top:6px;padding-top:9px;border-top:2px solid var(--ink);font-size:13px;font-weight:700;}
+  .nv-note{margin-top:14px;font-size:10px;color:#3f4650;background:#f5f6f8;border-radius:7px;padding:9px 12px;
     display:flex;justify-content:space-between;align-items:center;}
-  .nv-badge{font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);
-    background:var(--accent-soft);border:1px solid var(--accent-brd);padding:3px 9px;border-radius:20px;}
-  .nv-foot{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;}
-  .nv-foot .thanks{font-size:12.5px;font-weight:600;}
-  .nv-foot .refer{font-size:11px;color:var(--muted);margin-top:4px;}
-  .nv-foot .handles{font-size:10.5px;color:var(--accent);margin-top:11px;font-weight:600;}
+  .nv-badge{font-size:8.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--accent-brd);padding:3px 8px;border-radius:20px;}
+  .nv-foot{margin-top:22px;border-top:1px solid var(--line);padding-top:11px;}
+  .nv-foot .thanks{font-size:11px;font-weight:600;}
+  .nv-foot .refer{font-size:10px;color:var(--muted);margin-top:3px;}
+  .nv-foot .handles{font-size:9.5px;color:var(--accent);margin-top:8px;font-weight:600;}
 
   /* ── Login screen ── */
   #login-screen {
@@ -860,20 +860,14 @@ async function buildInvoicePdf() {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();   // 595.28
   const pageH = doc.internal.pageSize.getHeight();  // 841.89
-  const imgW = pageW;
-  const imgH = canvas.height * (pageW / canvas.width);
   const img = canvas.toDataURL('image/jpeg', 0.95);
-  if (imgH <= pageH) {
-    doc.addImage(img, 'JPEG', 0, 0, imgW, imgH);
-  } else {
-    // Multi-page fallback for very long invoices.
-    let remaining = imgH, pos = 0;
-    while (remaining > 0) {
-      doc.addImage(img, 'JPEG', 0, pos, imgW, imgH);
-      remaining -= pageH;
-      if (remaining > 0) { doc.addPage(); pos -= pageH; }
-    }
-  }
+  // Always fit the whole invoice on ONE page: scale to width, and if that
+  // still overflows the height, scale down further so it never spills over.
+  let imgW = pageW;
+  let imgH = canvas.height * (pageW / canvas.width);
+  if (imgH > pageH) { const s = pageH / imgH; imgH = pageH; imgW = imgW * s; }
+  const x = (pageW - imgW) / 2;   // centre horizontally if scaled down
+  doc.addImage(img, 'JPEG', x, 0, imgW, imgH);
   return doc;
 }
 
