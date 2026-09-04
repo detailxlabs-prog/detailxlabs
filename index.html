@@ -1805,6 +1805,35 @@ if (form) {
     });
   }
 
+  // iOS backgrounds a tab the moment a new one opens, which freezes the awaits
+  // below. So on mobile we never open a tab \u2014 we hand the current one to
+  // WhatsApp after the save, which needs no popup permission.
+  const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
+
+  // Never let a stalled network leave the customer staring at "Submitting\u2026".
+  function withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error((label || 'Request') + ' timed out')), ms))
+    ]);
+  }
+
+  // Visible safety net: if the handoff is blocked, the customer still has a
+  // tappable link with their full request in it.
+  function showFallbackLink(url, serial) {
+    const old = document.getElementById('wa-fallback');
+    if (old) old.remove();
+    const p = document.createElement('p');
+    p.id = 'wa-fallback';
+    p.style.cssText = 'margin:16px 0 0;text-align:center;font-size:15px;line-height:1.5';
+    p.innerHTML = (serial ? 'Booking <strong>' + serial + '</strong> saved. ' : '') +
+      'WhatsApp didn\'t open? <a href="' + url + '" target="_blank" rel="noopener" ' +
+      'style="text-decoration:underline;font-weight:600">Tap here to send your request</a>.';
+    form.appendChild(p);
+  }
+
   function pkgPrice(pkg) {
     if (PRICING.packages[pkg] != null) return PRICING.packages[pkg];
     const m = pkg.match(/\$(\d+(?:\.\d+)?)/); // fallback: parse "$120" from the label
@@ -1813,26 +1842,6 @@ if (form) {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    // iOS Safari (and most mobile browsers) only allow window.open() while the
-    // user gesture is still "fresh". Because we await Firestore below, opening
-    // WhatsApp afterwards gets silently blocked. So we claim the tab NOW,
-    // synchronously, and point it at WhatsApp once the save is done.
-    let waWindow = null;
-    try {
-      waWindow = window.open('', '_blank');
-      if (waWindow && waWindow.document) {
-        waWindow.document.write(
-          '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">' +
-          '<title>Opening WhatsApp\u2026</title>' +
-          '<body style="margin:0;display:flex;align-items:center;justify-content:center;' +
-          'height:100vh;font:16px -apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;' +
-          'background:#0b0b0b;color:#eee">Opening WhatsApp\u2026</body>'
-        );
-        waWindow.document.close();
-      }
-    } catch (_) { waWindow = null; }
-
     const btn = form.querySelector('.form-submit');
 
     const firstName = document.getElementById('bk-firstname').value.trim();
@@ -1873,7 +1882,7 @@ if (form) {
       // 1) Try to reserve a sequential serial. If the counter write is blocked,
       //    fall back to a timestamp-based serial so the booking can still save.
       try {
-        serialNum = await reserveSerialNumber();
+        serialNum = await withTimeout(reserveSerialNumber(), 8000, 'Booking number');
         serial = formatSerial(serialNum);
       } catch (err) {
         console.warn('Serial counter unavailable, using fallback serial:', err);
@@ -1882,7 +1891,7 @@ if (form) {
 
       // 2) Save the booking itself. This is the important write — surface failures.
       try {
-        await fb.addDoc(fb.collection(db, 'bookings'), {
+        await withTimeout(fb.addDoc(fb.collection(db, 'bookings'), {
           serial, serialNum,
           firstName, lastName, email, phone, car,
           packageName: pkg, packagePrice,
@@ -1893,7 +1902,7 @@ if (form) {
           currency: PRICING.currency || 'CAD',
           status: 'new',
           createdAt: fb.serverTimestamp()
-        });
+        }), 12000, 'Saving your booking');
         saved = true;
       } catch (err) {
         console.error('Booking save to Firestore failed:', err);
@@ -1942,28 +1951,22 @@ _Sent from ${BUSINESS.name} website_`;
 
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
-    if (waWindow && !waWindow.closed) {
-      // Tab was reserved before the await, so it is safe to redirect it.
-      try {
-        waWindow.location.href = url;
-      } catch (_) {
-        waWindow = null;
-      }
+    showFallbackLink(url, saved ? serial : '');
+
+    if (saved && serial) {
+      alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will now open so you can send us the request.`);
     }
 
-    if (!waWindow || waWindow.closed) {
-      // Popup blocked or the tab was dismissed: confirm first, then hand the
-      // current tab over to WhatsApp (never blocked, works everywhere on iOS).
-      if (saved && serial) {
-        alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will now open so you can send the request to us.`);
-      }
+    if (IS_MOBILE) {
+      // Same-tab navigation: no popup permission needed, and the page is still
+      // in the foreground so this always runs. wa.me then opens the app.
       window.location.href = url;
       return;
     }
 
-    if (saved && serial) {
-      alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will open so you can send the request to us.`);
-    }
+    // Desktop: a new tab is nicer. If the browser blocks it, use this tab.
+    const w = window.open(url, '_blank', 'noopener');
+    if (!w) window.location.href = url;
   });
 }
 </script>
