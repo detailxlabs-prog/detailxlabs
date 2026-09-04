@@ -1813,6 +1813,26 @@ if (form) {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // iOS Safari (and most mobile browsers) only allow window.open() while the
+    // user gesture is still "fresh". Because we await Firestore below, opening
+    // WhatsApp afterwards gets silently blocked. So we claim the tab NOW,
+    // synchronously, and point it at WhatsApp once the save is done.
+    let waWindow = null;
+    try {
+      waWindow = window.open('', '_blank');
+      if (waWindow && waWindow.document) {
+        waWindow.document.write(
+          '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">' +
+          '<title>Opening WhatsApp\u2026</title>' +
+          '<body style="margin:0;display:flex;align-items:center;justify-content:center;' +
+          'height:100vh;font:16px -apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;' +
+          'background:#0b0b0b;color:#eee">Opening WhatsApp\u2026</body>'
+        );
+        waWindow.document.close();
+      }
+    } catch (_) { waWindow = null; }
+
     const btn = form.querySelector('.form-submit');
 
     const firstName = document.getElementById('bk-firstname').value.trim();
@@ -1921,7 +1941,25 @@ ${notes || 'No additional notes provided.'}
 _Sent from ${BUSINESS.name} website_`;
 
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+
+    if (waWindow && !waWindow.closed) {
+      // Tab was reserved before the await, so it is safe to redirect it.
+      try {
+        waWindow.location.href = url;
+      } catch (_) {
+        waWindow = null;
+      }
+    }
+
+    if (!waWindow || waWindow.closed) {
+      // Popup blocked or the tab was dismissed: confirm first, then hand the
+      // current tab over to WhatsApp (never blocked, works everywhere on iOS).
+      if (saved && serial) {
+        alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will now open so you can send the request to us.`);
+      }
+      window.location.href = url;
+      return;
+    }
 
     if (saved && serial) {
       alert(`Your booking request has been recorded.\n\nBooking number: ${serial}\n\nWhatsApp will open so you can send the request to us.`);
